@@ -1,0 +1,851 @@
+import { LitElement, html, css, unsafeCSS } from 'lit';
+import { themeStyles, inputStyles } from '../styles/shared-styles.js';
+import { SCHEMA_TYPES, LAYOUT } from '../shared/constants.js';
+import '../shared/je-value-block.js';
+
+/**
+ * Visual schema editor with recursive property/items editing
+ * @element je-schema-visual
+ * @property {Object} schema - JSON Schema object
+ * @fires schema-change - When schema changes, detail: { schema }
+ */
+export class JeSchemaVisual extends LitElement {
+  static properties = {
+    schema: { type: Object },
+    debugGrid: { type: Boolean, attribute: 'debug-grid' },
+    _enumEditingPaths: { type: Object, state: true }
+  };
+
+  static styles = [
+    themeStyles,
+    inputStyles,
+    css`
+      :host {
+        display: block;
+        padding: 1rem;
+        background: var(--je-bg-secondary);
+      }
+
+      .property-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+      }
+
+      .property-name {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem 0.25rem 0;
+        min-height: ${unsafeCSS(LAYOUT.blockRowHeight)};
+        box-sizing: border-box;
+        overflow: visible;
+      }
+
+      .property-value {
+        padding: 0.25rem 0;
+        min-height: ${unsafeCSS(LAYOUT.blockRowHeight)};
+        box-sizing: border-box;
+      }
+
+      /* Debug grid lines */
+      :host([debug-grid]) .property-grid {
+        border: 1px solid rgba(255, 0, 0, 0.3);
+      }
+      :host([debug-grid]) .property-name {
+        border: 1px solid rgba(0, 255, 0, 0.3);
+      }
+      :host([debug-grid]) .property-value {
+        border: 1px solid rgba(0, 0, 255, 0.3);
+      }
+
+      .name-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .name-btn {
+        font-size: 0.875rem;
+        font-family: var(--je-font-mono);
+        font-weight: 500;
+        color: var(--je-text);
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        transition: color 0.15s ease;
+        text-align: left;
+      }
+
+      .name-btn:hover {
+        color: var(--je-info);
+      }
+
+      .name-btn.required {
+        border-bottom: 1px solid var(--je-error);
+      }
+
+      .name-input {
+        width: 8rem;
+        padding: 0.125rem 0.5rem;
+        font-size: 0.875rem;
+      }
+
+      .hover-actions {
+        position: absolute;
+        right: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        padding-right: 0.5rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s;
+        z-index: 10;
+      }
+
+      .hover-actions::after {
+        content: '';
+        position: absolute;
+        top: -0.5rem;
+        bottom: -0.5rem;
+        left: -0.5rem;
+        right: 0;
+        z-index: -1;
+      }
+
+      .name-group:hover .hover-actions,
+      .hover-actions:hover {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .action-btn {
+        position: relative;
+        z-index: 1;
+        width: 0.875rem;
+        height: 0.875rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 2px;
+        font-size: 0.5rem;
+        background: var(--je-bg-input);
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .action-btn.required {
+        color: var(--je-text-dim);
+      }
+
+      .action-btn.required.active {
+        color: var(--je-warning);
+        background: rgba(255, 166, 77, 0.3);
+      }
+
+      .action-btn.required:hover {
+        color: var(--je-warning);
+        background: rgba(255, 166, 77, 0.2);
+      }
+
+      .action-btn.required.active:hover {
+        background: rgba(255, 166, 77, 0.4);
+      }
+
+      .action-btn.delete {
+        color: var(--je-text-dim);
+      }
+
+      .action-btn.delete:hover {
+        color: var(--je-error);
+        background: rgba(255, 68, 68, 0.2);
+      }
+
+      .type-menu {
+        position: fixed;
+        background: var(--je-bg-input);
+        border: 1px solid #3a4a6a;
+        border-radius: var(--je-radius);
+        padding: 0.25rem;
+        z-index: 10000;
+        min-width: 100px;
+      }
+
+      .type-menu button {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.5rem;
+        text-align: left;
+        font-size: 0.75rem;
+        background: none;
+        border: none;
+        color: var(--je-text);
+        cursor: pointer;
+        border-radius: 2px;
+        transition: background 0.15s;
+      }
+
+      .type-menu button:hover {
+        background: var(--je-bg-hover);
+      }
+
+      .type-menu button.selected {
+        background: var(--je-info);
+        color: white;
+      }
+
+      .empty-message {
+        font-size: 0.75rem;
+        color: var(--je-text-dim);
+        font-style: italic;
+        padding: 0.25rem 0;
+      }
+
+      /* Enum editor styles */
+      .enum-editor {
+        padding: 0.5rem;
+        background: rgba(77, 166, 255, 0.05);
+        border-radius: var(--je-radius);
+        margin-top: 0.5rem;
+      }
+
+      .enum-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .enum-header span {
+        font-size: 0.75rem;
+        color: var(--je-text-muted);
+      }
+
+      .enum-header button {
+        font-size: 0.625rem;
+        color: var(--je-text-dim);
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+
+      .enum-header button:hover {
+        color: var(--je-error);
+      }
+
+      .enum-value-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .enum-value-row .index {
+        width: 1rem;
+        font-size: 0.625rem;
+        color: var(--je-text-dim);
+        text-align: right;
+      }
+
+      .enum-value-row .value-btn {
+        flex: 1;
+        text-align: left;
+        font-size: 0.75rem;
+        font-family: var(--je-font-mono);
+        padding: 0.125rem 0.5rem;
+        border-radius: var(--je-radius);
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .enum-value-row .value-btn:hover {
+        background: var(--je-bg-input);
+      }
+
+      .enum-value-row .value-btn.string { color: var(--je-string); }
+      .enum-value-row .value-btn.number { color: var(--je-number); }
+      .enum-value-row .value-btn.boolean { color: var(--je-boolean); }
+
+      .enum-value-row .delete-btn {
+        width: 1rem;
+        height: 1rem;
+        font-size: 0.625rem;
+        background: var(--je-bg-input);
+        border: none;
+        border-radius: 2px;
+        color: var(--je-text-dim);
+        cursor: pointer;
+        opacity: 0;
+        transition: all 0.15s;
+      }
+
+      .enum-value-row:hover .delete-btn {
+        opacity: 1;
+      }
+
+      .enum-value-row .delete-btn:hover {
+        background: rgba(255, 68, 68, 0.2);
+        color: var(--je-error);
+      }
+
+      .add-enum-value {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        color: var(--je-success);
+        background: none;
+        border: none;
+        cursor: pointer;
+        margin-top: 0.5rem;
+        padding: 0;
+      }
+
+      .add-enum-value:hover {
+        color: #00e67a;
+      }
+
+      .add-enum-value svg {
+        width: 0.75rem;
+        height: 0.75rem;
+      }
+    `
+  ];
+
+  constructor() {
+    super();
+    this.schema = { type: 'object', properties: {} };
+    this.debugGrid = false;
+    this._expandedPaths = new Set(['']);
+    this._enumEditingPaths = new Set();
+    this._typeMenuState = { open: false, path: null, top: 0, left: 0 };
+    this._editingName = null;
+    this._editingEnum = { path: null, index: null, value: '' };
+  }
+
+  render() {
+    return html`
+      ${this._renderRootNode()}
+      ${this._renderTypeMenu()}
+    `;
+  }
+
+  _renderRootNode() {
+    const type = this._getType(this.schema);
+    const hasChildren = type === 'object' || type === 'array';
+    const isExpanded = this._expandedPaths.has('');
+    const hasEnum = Array.isArray(this.schema?.enum) && this.schema.enum.length > 0;
+
+    return html`
+      <je-value-block
+        type="${type}"
+        ?expanded="${isExpanded}"
+        ?clickable="${hasChildren}"
+        .enumValues="${hasEnum ? this.schema.enum : null}"
+        ?enum-editing="${this._enumEditingPaths.has('')}"
+        ?show-add-button="${type === 'object'}"
+        add-button-title="Add property"
+        count="${type === 'object' ? Object.keys(this.schema?.properties || {}).length : null}"
+        ?show-items-label="${type === 'array'}"
+        @toggle-expand="${() => this._toggleExpand('')}"
+        @type-click="${(e) => this._openTypeMenu(e.detail.event, [])}"
+        @enum-click="${(e) => this._toggleEnumEditing(e.detail.event, '')}"
+        @add-click="${(e) => this._handleAddProperty(e.detail.event, [])}"
+      >
+        <div slot="content">
+          ${this._renderChildren(this.schema, [], type)}
+        </div>
+        <div slot="enum-editor">
+          ${this._renderEnumEditor(this.schema, [])}
+        </div>
+      </je-value-block>
+    `;
+  }
+
+  _renderProperty(name, node, path, isRequired, parentPath) {
+    const pathKey = path.join('.');
+    const type = this._getType(node);
+    const hasChildren = type === 'object' || type === 'array';
+    const isExpanded = this._expandedPaths.has(pathKey);
+    const hasEnum = Array.isArray(node?.enum) && node.enum.length > 0;
+    const isEditing = this._editingName === pathKey;
+
+    return html`
+      <div class="property-name">
+        <div class="name-group">
+          <div class="hover-actions">
+            <button
+              class="action-btn required ${isRequired ? 'active' : ''}"
+              @click="${() => this._toggleRequired(parentPath, name)}"
+              title="${isRequired ? 'Required - click to make optional' : 'Optional - click to make required'}"
+            >*</button>
+            <button
+              class="action-btn delete"
+              @click="${() => this._deleteProperty(parentPath, name)}"
+              title="Delete property"
+            >x</button>
+          </div>
+          ${isEditing ? html`
+            <input
+              type="text"
+              class="input name-input"
+              .value="${name}"
+              @blur="${(e) => this._finishRename(parentPath, name, e.target.value)}"
+              @keydown="${(e) => {
+                if (e.key === 'Enter') this._finishRename(parentPath, name, e.target.value);
+                if (e.key === 'Escape') { this._editingName = null; this.requestUpdate(); }
+              }}"
+              @click="${e => e.stopPropagation()}"
+              autofocus
+            />
+          ` : html`
+            <button
+              class="name-btn ${isRequired ? 'required' : ''}"
+              @click="${() => this._startRename(pathKey)}"
+              title="Click to rename"
+            >${name}</button>
+          `}
+        </div>
+      </div>
+      <div class="property-value">
+        <je-value-block
+          type="${type}"
+          ?expanded="${isExpanded}"
+          ?clickable="${hasChildren}"
+          .enumValues="${hasEnum ? node.enum : null}"
+          ?enum-editing="${this._enumEditingPaths.has(pathKey)}"
+          ?show-ghost-enum="${!hasEnum && !hasChildren}"
+          ?show-add-button="${type === 'object'}"
+          add-button-title="Add property"
+          count="${type === 'object' ? Object.keys(node.properties || {}).length : null}"
+          ?show-items-label="${type === 'array'}"
+          @toggle-expand="${() => this._toggleExpand(pathKey)}"
+          @type-click="${(e) => this._openTypeMenu(e.detail.event, path)}"
+          @enum-click="${(e) => this._toggleEnumEditing(e.detail.event, pathKey)}"
+          @ghost-enum-click="${() => this._addEnum(path)}"
+          @add-click="${(e) => this._handleAddProperty(e.detail.event, path)}"
+        >
+          <div slot="content">
+            ${this._renderChildren(node, path, type)}
+          </div>
+          <div slot="enum-editor">
+            ${this._renderEnumEditor(node, path)}
+          </div>
+        </je-value-block>
+      </div>
+    `;
+  }
+
+  _renderTypeMenu() {
+    if (!this._typeMenuState.open) return '';
+
+    return html`
+      <div
+        class="type-menu"
+        style="top: ${this._typeMenuState.top}px; left: ${this._typeMenuState.left}px;"
+        @click="${e => e.stopPropagation()}"
+      >
+        ${SCHEMA_TYPES.map(t => html`
+          <button
+            class="${this._getTypeAtPath(this._typeMenuState.path) === t ? 'selected' : ''}"
+            @click="${() => this._setType(this._typeMenuState.path, t)}"
+          >${t}</button>
+        `)}
+      </div>
+    `;
+  }
+
+  _renderChildren(node, path, type) {
+    if (!node) return '';
+
+    if (type === 'object') {
+      const properties = node.properties || {};
+      const required = node.required || [];
+      const propEntries = Object.entries(properties);
+
+      return propEntries.length === 0
+        ? html`<div class="empty-message">No properties defined</div>`
+        : html`
+            <div class="property-grid">
+              ${propEntries.map(([propName, propNode]) => {
+                const propPath = [...path, 'properties', propName];
+                const isReq = required.includes(propName);
+                return this._renderProperty(propName, propNode, propPath, isReq, path);
+              })}
+            </div>
+          `;
+    }
+
+    if (type === 'array') {
+      const items = node.items || { type: 'string' };
+      const itemsPath = [...path, 'items'];
+      const itemsPathKey = itemsPath.join('.');
+      const itemType = this._getType(items);
+      const itemHasChildren = itemType === 'object' || itemType === 'array';
+      const itemIsExpanded = this._expandedPaths.has(itemsPathKey);
+      const itemHasEnum = Array.isArray(items?.enum) && items.enum.length > 0;
+
+      return html`
+        <je-value-block
+          type="${itemType}"
+          ?expanded="${itemIsExpanded}"
+          ?clickable="${itemHasChildren}"
+          .enumValues="${itemHasEnum ? items.enum : null}"
+          ?enum-editing="${this._enumEditingPaths.has(itemsPathKey)}"
+          ?show-ghost-enum="${!itemHasEnum && !itemHasChildren}"
+          ?show-add-button="${itemType === 'object'}"
+          add-button-title="Add property"
+          count="${itemType === 'object' ? Object.keys(items.properties || {}).length : null}"
+          ?show-items-label="${itemType === 'array'}"
+          @toggle-expand="${() => this._toggleExpand(itemsPathKey)}"
+          @type-click="${(e) => this._openTypeMenu(e.detail.event, itemsPath)}"
+          @enum-click="${(e) => this._toggleEnumEditing(e.detail.event, itemsPathKey)}"
+          @ghost-enum-click="${() => this._addEnum(itemsPath)}"
+          @add-click="${(e) => this._handleAddProperty(e.detail.event, itemsPath)}"
+        >
+          <div slot="content">
+            ${this._renderChildren(items, itemsPath, itemType)}
+          </div>
+          <div slot="enum-editor">
+            ${this._renderEnumEditor(items, itemsPath)}
+          </div>
+        </je-value-block>
+      `;
+    }
+
+    return '';
+  }
+
+  _renderEnumEditor(node, path) {
+    if (!node) return '';
+    const enumValues = node.enum || [];
+    const type = this._getType(node);
+
+    return html`
+      <div class="enum-editor">
+        <div class="enum-header">
+          <span>Enum values</span>
+          <button @click="${() => this._removeEnum(path)}">remove enum</button>
+        </div>
+        ${enumValues.map((value, index) => this._renderEnumValue(value, index, path, type))}
+        <button class="add-enum-value" @click="${() => this._addEnumValue(path, type)}">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add value
+        </button>
+      </div>
+    `;
+  }
+
+  _renderEnumValue(value, index, path, type) {
+    const pathKey = path.join('.');
+    const isEditing = this._editingEnum.path === pathKey && this._editingEnum.index === index;
+    const valueType = typeof value;
+    const display = valueType === 'string' ? `"${value}"` : String(value);
+
+    if (isEditing) {
+      return html`
+        <div class="enum-value-row">
+          <span class="index">${index}</span>
+          <input
+            type="text"
+            class="input"
+            style="flex: 1;"
+            .value="${this._editingEnum.value}"
+            @input="${(e) => this._editingEnum = { ...this._editingEnum, value: e.target.value }}"
+            @blur="${() => this._saveEnumValue(path, index, type)}"
+            @keydown="${(e) => {
+              if (e.key === 'Enter') this._saveEnumValue(path, index, type);
+              if (e.key === 'Escape') this._editingEnum = { path: null, index: null, value: '' };
+            }}"
+            autofocus
+          />
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="enum-value-row">
+        <span class="index">${index}</span>
+        <button
+          class="value-btn ${valueType}"
+          @click="${() => this._startEditEnumValue(path, index, value)}"
+        >${display}</button>
+        <button
+          class="delete-btn"
+          @click="${() => this._deleteEnumValue(path, index)}"
+        >x</button>
+      </div>
+    `;
+  }
+
+  // Helper methods
+  _getType(node) {
+    if (!node) return 'object';
+    if (Array.isArray(node.type)) return node.type[0] || 'string';
+    return node.type || 'object';
+  }
+
+  _getTypeAtPath(path) {
+    const node = this._getNodeAtPath(path);
+    return this._getType(node);
+  }
+
+  _getNodeAtPath(path) {
+    let node = this.schema;
+    for (const key of path) {
+      if (!node) return null;
+      node = node[key];
+    }
+    return node;
+  }
+
+  _toggleExpand(pathKey) {
+    if (this._expandedPaths.has(pathKey)) {
+      this._expandedPaths.delete(pathKey);
+    } else {
+      this._expandedPaths.add(pathKey);
+    }
+    this.requestUpdate();
+  }
+
+  _toggleEnumEditing(e, pathKey) {
+    e.stopPropagation();
+    const newSet = new Set(this._enumEditingPaths);
+    if (newSet.has(pathKey)) {
+      newSet.delete(pathKey);
+    } else {
+      newSet.add(pathKey);
+    }
+    this._enumEditingPaths = newSet;
+  }
+
+  _openTypeMenu(e, path) {
+    const rect = e.target.getBoundingClientRect();
+    this._typeMenuState = {
+      open: true,
+      path,
+      top: rect.bottom + 4,
+      left: rect.left
+    };
+    this.requestUpdate();
+
+    const closeHandler = () => {
+      this._typeMenuState = { open: false, path: null, top: 0, left: 0 };
+      this.requestUpdate();
+      document.removeEventListener('click', closeHandler);
+    };
+    setTimeout(() => document.addEventListener('click', closeHandler), 0);
+  }
+
+  _setType(path, newType) {
+    const newSchema = this._updateAtPath(this.schema, path, node => {
+      const newNode = { ...node, type: newType };
+      if (newType === 'object' && !newNode.properties) {
+        newNode.properties = {};
+      } else if (newType !== 'object') {
+        delete newNode.properties;
+        delete newNode.required;
+      }
+      if (newType === 'array' && !newNode.items) {
+        newNode.items = { type: 'string' };
+      } else if (newType !== 'array') {
+        delete newNode.items;
+      }
+      return newNode;
+    });
+    this._typeMenuState = { open: false, path: null, top: 0, left: 0 };
+    this._emitChange(newSchema);
+  }
+
+  _handleAddProperty(e, path) {
+    e.stopPropagation();
+    this._addProperty(path);
+  }
+
+  _addProperty(path) {
+    const newSchema = this._updateAtPath(this.schema, path, node => {
+      const properties = node.properties || {};
+      let counter = 1;
+      let newName = `key${counter}`;
+      while (properties[newName]) {
+        newName = `key${++counter}`;
+      }
+      return {
+        ...node,
+        properties: { ...properties, [newName]: { type: 'string' } }
+      };
+    });
+    // Expand to show the new property
+    const pathKey = path.join('.');
+    this._expandedPaths.add(pathKey);
+    this.requestUpdate();
+    this._emitChange(newSchema);
+  }
+
+  _deleteProperty(parentPath, propName) {
+    const newSchema = this._updateAtPath(this.schema, parentPath, node => {
+      const { [propName]: _, ...rest } = node.properties || {};
+      const required = (node.required || []).filter(r => r !== propName);
+      return { ...node, properties: rest, required: required.length ? required : undefined };
+    });
+    this._emitChange(newSchema);
+  }
+
+  _toggleRequired(parentPath, propName) {
+    const newSchema = this._updateAtPath(this.schema, parentPath, node => {
+      const required = node.required || [];
+      const isReq = required.includes(propName);
+      const newRequired = isReq
+        ? required.filter(r => r !== propName)
+        : [...required, propName];
+      return { ...node, required: newRequired.length ? newRequired : undefined };
+    });
+    this._emitChange(newSchema);
+  }
+
+  _startRename(pathKey) {
+    this._editingName = pathKey;
+    this.requestUpdate();
+  }
+
+  _finishRename(parentPath, oldName, newName) {
+    this._editingName = null;
+    if (!newName || newName === oldName) {
+      this.requestUpdate();
+      return;
+    }
+
+    const newSchema = this._updateAtPath(this.schema, parentPath, node => {
+      const { [oldName]: propValue, ...rest } = node.properties || {};
+      const required = (node.required || []).map(r => r === oldName ? newName : r);
+      return {
+        ...node,
+        properties: { ...rest, [newName]: propValue },
+        required: required.length ? required : undefined
+      };
+    });
+    this._emitChange(newSchema);
+  }
+
+  // Enum methods
+  _addEnum(path) {
+    const node = this._getNodeAtPath(path);
+    const type = this._getType(node);
+    const defaultValue = type === 'string' ? '' : type === 'boolean' ? true : 0;
+
+    const newSchema = this._updateAtPath(this.schema, path, n => ({
+      ...n,
+      enum: [defaultValue]
+    }));
+
+    this._expandedPaths.add(path.join('.'));
+    this._emitChange(newSchema);
+  }
+
+  _removeEnum(path) {
+    const pathKey = path.join('.');
+    const newSet = new Set(this._enumEditingPaths);
+    newSet.delete(pathKey);
+    this._enumEditingPaths = newSet;
+
+    const newSchema = this._updateAtPath(this.schema, path, node => {
+      const { enum: _, ...rest } = node;
+      return rest;
+    });
+    this._emitChange(newSchema);
+  }
+
+  _addEnumValue(path, type) {
+    const defaultValue = type === 'string' ? '' : type === 'boolean' ? true : 0;
+    const newSchema = this._updateAtPath(this.schema, path, node => ({
+      ...node,
+      enum: [...(node.enum || []), defaultValue]
+    }));
+    this._emitChange(newSchema);
+  }
+
+  _startEditEnumValue(path, index, value) {
+    this._editingEnum = {
+      path: path.join('.'),
+      index,
+      value: typeof value === 'string' ? value : String(value)
+    };
+    this.requestUpdate();
+  }
+
+  _saveEnumValue(path, index, type) {
+    let parsed;
+    const raw = this._editingEnum.value;
+
+    if (type === 'string') {
+      parsed = raw;
+    } else if (type === 'number' || type === 'integer') {
+      parsed = Number(raw);
+      if (isNaN(parsed)) {
+        this._editingEnum = { path: null, index: null, value: '' };
+        this.requestUpdate();
+        return;
+      }
+    } else if (type === 'boolean') {
+      parsed = raw === 'true';
+    } else {
+      parsed = raw;
+    }
+
+    const newSchema = this._updateAtPath(this.schema, path, node => {
+      const newEnum = [...(node.enum || [])];
+      newEnum[index] = parsed;
+      return { ...node, enum: newEnum };
+    });
+
+    this._editingEnum = { path: null, index: null, value: '' };
+    this._emitChange(newSchema);
+  }
+
+  _deleteEnumValue(path, index) {
+    const node = this._getNodeAtPath(path);
+    const newEnum = (node.enum || []).filter((_, i) => i !== index);
+
+    if (newEnum.length === 0) {
+      this._removeEnum(path);
+    } else {
+      const newSchema = this._updateAtPath(this.schema, path, n => ({
+        ...n,
+        enum: newEnum
+      }));
+      this._emitChange(newSchema);
+    }
+  }
+
+  // Immutable update helper
+  _updateAtPath(obj, path, updater) {
+    if (path.length === 0) {
+      return updater(obj);
+    }
+
+    const [head, ...tail] = path;
+    return {
+      ...obj,
+      [head]: this._updateAtPath(obj[head] || {}, tail, updater)
+    };
+  }
+
+  _emitChange(newSchema) {
+    this.schema = newSchema;
+    this.dispatchEvent(new CustomEvent('schema-change', {
+      detail: { schema: newSchema },
+      bubbles: true,
+      composed: true
+    }));
+  }
+}
+
+customElements.define('je-schema-visual', JeSchemaVisual);

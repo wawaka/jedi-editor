@@ -1,0 +1,21 @@
+{
+  "name": "jedi-editor",
+  "version": "1.0.0",
+  "description": "JEDI - Visual JSON Schema editor web component",
+  "type": "module",
+  "keywords": ["jedi", "json", "json-schema", "editor", "lit", "web-components", "ajv"],
+  "license": "Unlicense",
+  "scripts": {
+    "bundle-deps": "node scripts/bundle-deps.js",
+    "dev": "node scripts/dev-server.js",
+    "postinstall": "npm run bundle-deps"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "lit": "^3.3.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.2"
+  }
+}
