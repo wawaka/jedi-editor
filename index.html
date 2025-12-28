@@ -349,11 +349,29 @@
     // Theme selector element
     const themeSelector = document.getElementById('theme-selector');
 
+    // Theme storage key (must match theme-service.js)
+    const THEME_STORAGE_KEY = 'jedi-editor-theme';
+    const DEFAULT_THEME = 'dark';
+
     // Apply theme to page body
     function applyPageTheme(theme) {
       document.body.classList.remove('theme-dark', 'theme-light');
       document.body.classList.add(`theme-${theme}`);
     }
+
+    // Get saved theme from localStorage
+    function getSavedTheme() {
+      try {
+        return localStorage.getItem(THEME_STORAGE_KEY) || DEFAULT_THEME;
+      } catch {
+        return DEFAULT_THEME;
+      }
+    }
+
+    // Apply saved theme immediately (before editor loads)
+    const initialTheme = getSavedTheme();
+    applyPageTheme(initialTheme);
+    themeSelector.theme = initialTheme;
 
     // Wait for component to be defined and ready
     customElements.whenDefined('jedi-editor').then(async () => {
@@ -367,10 +385,6 @@
       } else {
         editor.setState(EXAMPLE_SCHEMA, EXAMPLE_DATA);
       }
-
-      // Initialize theme selector and page theme
-      themeSelector.theme = editor.theme;
-      applyPageTheme(editor.theme);
 
       // Show editor
       document.getElementById('loading').style.display = 'none';
