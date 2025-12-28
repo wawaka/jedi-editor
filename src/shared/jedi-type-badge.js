@@ -3,11 +3,11 @@ import { TYPE_COLORS } from './constants.js';
 
 /**
  * Reusable type badge component
- * @element je-type-badge
+ * @element jedi-type-badge
  * @property {string} type - The type to display (string, number, integer, boolean, object, array, null)
  * @property {boolean} clickable - Whether the badge is clickable
  */
-export class JeTypeBadge extends LitElement {
+export class JediTypeBadge extends LitElement {
   static properties = {
     type: { type: String },
     clickable: { type: Boolean }
@@ -63,4 +63,4 @@ export class JeTypeBadge extends LitElement {
   }
 }
 
-customElements.define('je-type-badge', JeTypeBadge);
+customElements.define('jedi-type-badge', JediTypeBadge);

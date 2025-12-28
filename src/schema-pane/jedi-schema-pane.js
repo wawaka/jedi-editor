@@ -1,16 +1,16 @@
 import { LitElement, html, css } from 'lit';
 import { themeStyles, buttonStyles, scrollbarStyles } from '../styles/shared-styles.js';
-import './je-schema-visual.js';
-import '../shared/je-raw-editor.js';
-import '../shared/je-editor-toggle.js';
+import './jedi-schema-visual.js';
+import '../shared/jedi-raw-editor.js';
+import '../shared/jedi-editor-toggle.js';
 
 /**
  * Schema pane component with mode toggle
- * @element je-schema-pane
+ * @element jedi-schema-pane
  * @property {Object} schema - Current schema object
  * @fires schema-change - When schema changes, detail: { schema }
  */
-export class JeSchemaPane extends LitElement {
+export class JediSchemaPane extends LitElement {
   static properties = {
     schema: { type: Object },
     debugGrid: { type: Boolean, attribute: 'debug-grid' },
@@ -36,8 +36,8 @@ export class JeSchemaPane extends LitElement {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: var(--je-bg-primary);
-        border-bottom: 1px solid var(--je-border);
+        background: var(--jedi-bg-primary);
+        border-bottom: 1px solid var(--jedi-border);
         padding: 0.5rem 0.75rem;
         flex-shrink: 0;
       }
@@ -51,15 +51,15 @@ export class JeSchemaPane extends LitElement {
       .title {
         font-size: 0.875rem;
         font-weight: 500;
-        color: var(--je-text);
+        color: var(--jedi-text);
       }
 
       .error-bar {
         background: rgba(255, 68, 68, 0.15);
-        border-bottom: 1px solid var(--je-error);
+        border-bottom: 1px solid var(--jedi-error);
         padding: 0.5rem 0.75rem;
         font-size: 0.75rem;
-        color: var(--je-error);
+        color: var(--jedi-error);
         flex-shrink: 0;
       }
 
@@ -97,10 +97,10 @@ export class JeSchemaPane extends LitElement {
         <div class="header-left">
           <span class="title">Schema</span>
         </div>
-        <je-editor-toggle
+        <jedi-editor-toggle
           mode="${this._mode}"
           @mode-change="${this._handleModeChange}"
-        ></je-editor-toggle>
+        ></jedi-editor-toggle>
       </div>
 
       ${this._parseError ? html`
@@ -111,16 +111,16 @@ export class JeSchemaPane extends LitElement {
 
       <div class="content">
         ${this._mode === 'raw' ? html`
-          <je-raw-editor
+          <jedi-raw-editor
             .value="${this._rawValue}"
             @change="${this._handleRawChange}"
-          ></je-raw-editor>
+          ></jedi-raw-editor>
         ` : html`
-          <je-schema-visual
+          <jedi-schema-visual
             .schema="${this.schema}"
             ?debug-grid="${this.debugGrid}"
             @schema-change="${this._handleVisualChange}"
-          ></je-schema-visual>
+          ></jedi-schema-visual>
         `}
       </div>
     `;
@@ -168,4 +168,4 @@ export class JeSchemaPane extends LitElement {
   }
 }
 
-customElements.define('je-schema-pane', JeSchemaPane);
+customElements.define('jedi-schema-pane', JediSchemaPane);

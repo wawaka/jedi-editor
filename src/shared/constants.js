@@ -16,23 +16,6 @@ export const TYPE_COLORS = {
   null:    { badge: '#4b5563', text: '#f3f4f6', border: 'rgba(75, 85, 99, 0.5)' },
 };
 
-// Theme colors
-export const THEME = {
-  bgPrimary: '#0a0e27',
-  bgSecondary: '#0f1629',
-  bgInput: '#1e2a4a',
-  border: '#1e2a4a',
-  borderLight: 'rgba(255, 255, 255, 0.1)',
-  accent: '#ff6b00',
-  success: '#00ff88',
-  error: '#ff4444',
-  warning: '#ffa64d',
-  info: '#4da6ff',
-  text: '#ffffff',
-  textMuted: '#9ca3af',
-  textDim: '#6b7280',
-};
-
 // Available schema types
 export const SCHEMA_TYPES = ['string', 'number', 'integer', 'boolean', 'object', 'array'];
 

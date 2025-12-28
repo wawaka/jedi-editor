@@ -1,19 +1,19 @@
 import { LitElement, html, css } from 'lit';
 import { themeStyles, buttonStyles, scrollbarStyles } from '../styles/shared-styles.js';
-import './je-data-visual.js';
-import '../shared/je-raw-editor.js';
-import '../shared/je-editor-toggle.js';
+import './jedi-data-visual.js';
+import '../shared/jedi-raw-editor.js';
+import '../shared/jedi-editor-toggle.js';
 
 /**
  * Data pane component with mode toggle and validation display
- * @element je-data-pane
+ * @element jedi-data-pane
  * @property {*} data - Current data
  * @property {Object} schema - JSON Schema for validation hints
  * @property {boolean} isValid - Whether data is valid
  * @property {Array} errors - Validation errors
  * @fires data-change - When data changes, detail: { data }
  */
-export class JeDataPane extends LitElement {
+export class JediDataPane extends LitElement {
   static properties = {
     data: { type: Object },
     schema: { type: Object },
@@ -42,8 +42,8 @@ export class JeDataPane extends LitElement {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: var(--je-bg-primary);
-        border-bottom: 1px solid var(--je-border);
+        background: var(--jedi-bg-primary);
+        border-bottom: 1px solid var(--jedi-border);
         padding: 0.5rem 0.75rem;
         flex-shrink: 0;
       }
@@ -57,7 +57,7 @@ export class JeDataPane extends LitElement {
       .title {
         font-size: 0.875rem;
         font-weight: 500;
-        color: var(--je-text);
+        color: var(--jedi-text);
       }
 
       .validation-icon {
@@ -65,19 +65,19 @@ export class JeDataPane extends LitElement {
       }
 
       .validation-icon.valid {
-        color: var(--je-success);
+        color: var(--jedi-success);
       }
 
       .validation-icon.invalid {
-        color: var(--je-error);
+        color: var(--jedi-error);
       }
 
       .error-bar {
         background: rgba(255, 68, 68, 0.15);
-        border-bottom: 1px solid var(--je-error);
+        border-bottom: 1px solid var(--jedi-error);
         padding: 0.5rem 0.75rem;
         font-size: 0.75rem;
-        color: var(--je-error);
+        color: var(--jedi-error);
         flex-shrink: 0;
       }
 
@@ -90,7 +90,7 @@ export class JeDataPane extends LitElement {
 
       .errors-footer {
         background: rgba(26, 26, 42, 1);
-        border-top: 1px solid var(--je-error);
+        border-top: 1px solid var(--jedi-error);
         padding: 0.5rem 0.75rem;
         max-height: 8rem;
         overflow: auto;
@@ -98,7 +98,7 @@ export class JeDataPane extends LitElement {
       }
 
       .errors-title {
-        color: var(--je-error);
+        color: var(--jedi-error);
         font-size: 0.75rem;
         font-weight: 500;
         margin-bottom: 0.25rem;
@@ -106,12 +106,12 @@ export class JeDataPane extends LitElement {
 
       .error-item {
         font-size: 0.75rem;
-        color: var(--je-text-muted);
+        color: var(--jedi-text-muted);
         padding: 0.125rem 0;
       }
 
       .error-path {
-        color: var(--je-info);
+        color: var(--jedi-info);
       }
     `
   ];
@@ -155,10 +155,10 @@ export class JeDataPane extends LitElement {
             ${currentIsValid ? '\u2713' : '\u2717'}
           </span>
         </div>
-        <je-editor-toggle
+        <jedi-editor-toggle
           mode="${this._mode}"
           @mode-change="${this._handleModeChange}"
-        ></je-editor-toggle>
+        ></jedi-editor-toggle>
       </div>
 
       ${this._parseError && this._mode === 'raw' ? html`
@@ -169,18 +169,18 @@ export class JeDataPane extends LitElement {
 
       <div class="content">
         ${this._mode === 'raw' ? html`
-          <je-raw-editor
+          <jedi-raw-editor
             .value="${this._rawValue}"
             @change="${this._handleRawChange}"
-          ></je-raw-editor>
+          ></jedi-raw-editor>
         ` : html`
-          <je-data-visual
+          <jedi-data-visual
             .data="${this.data}"
             .schema="${this.schema}"
             .errors="${this.errors}"
             ?debug-grid="${this.debugGrid}"
             @data-change="${this._handleVisualChange}"
-          ></je-data-visual>
+          ></jedi-data-visual>
         `}
       </div>
 
@@ -239,4 +239,4 @@ export class JeDataPane extends LitElement {
   }
 }
 
-customElements.define('je-data-pane', JeDataPane);
+customElements.define('jedi-data-pane', JediDataPane);

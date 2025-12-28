@@ -3,12 +3,12 @@ import { themeStyles } from '../styles/shared-styles.js';
 
 /**
  * Simple textarea for raw JSON editing that auto-sizes to content
- * @element je-raw-editor
+ * @element jedi-raw-editor
  * @property {string} value - JSON string value
  * @property {boolean} readonly - Whether editor is read-only
  * @fires change - When content changes, detail: { value: string }
  */
-export class JeRawEditor extends LitElement {
+export class JediRawEditor extends LitElement {
   static properties = {
     value: { type: String },
     readonly: { type: Boolean }
@@ -25,11 +25,11 @@ export class JeRawEditor extends LitElement {
       textarea {
         width: 100%;
         min-height: 4rem;
-        background: var(--je-bg-secondary);
-        color: var(--je-text);
+        background: var(--jedi-bg-secondary);
+        color: var(--jedi-text);
         border: none;
         padding: 0.75rem;
-        font-family: var(--je-font-mono);
+        font-family: var(--jedi-font-mono);
         font-size: 0.8125rem;
         line-height: 1.5;
         resize: none;
@@ -43,7 +43,7 @@ export class JeRawEditor extends LitElement {
       }
 
       textarea:focus {
-        background: var(--je-bg-input);
+        background: var(--jedi-bg-input);
       }
     `
   ];
@@ -97,4 +97,4 @@ export class JeRawEditor extends LitElement {
   }
 }
 
-customElements.define('je-raw-editor', JeRawEditor);
+customElements.define('jedi-raw-editor', JediRawEditor);

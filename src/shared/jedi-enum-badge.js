@@ -3,10 +3,10 @@ import { themeStyles } from '../styles/shared-styles.js';
 
 /**
  * Enum badge with hover tooltip showing values
- * @element je-enum-badge
+ * @element jedi-enum-badge
  * @property {Array} values - Enum values to display
  */
-export class JeEnumBadge extends LitElement {
+export class JediEnumBadge extends LitElement {
   static properties = {
     values: { type: Array },
     _showTooltip: { type: Boolean, state: true },
@@ -23,10 +23,10 @@ export class JeEnumBadge extends LitElement {
 
       .badge {
         padding: 0.125rem 0.375rem;
-        border-radius: var(--je-radius);
+        border-radius: var(--jedi-radius);
         font-size: 0.625rem;
         background: rgba(77, 166, 255, 0.2);
-        color: var(--je-info);
+        color: var(--jedi-info);
         border: 1px solid rgba(77, 166, 255, 0.5);
         cursor: pointer;
       }
@@ -38,8 +38,8 @@ export class JeEnumBadge extends LitElement {
       .tooltip {
         position: fixed;
         padding: 0.375rem 0.5rem;
-        border-radius: var(--je-radius);
-        background: var(--je-bg-input);
+        border-radius: var(--jedi-radius);
+        background: var(--jedi-bg-input);
         border: 1px solid #3a4a6a;
         z-index: 10001;
         display: flex;
@@ -57,29 +57,29 @@ export class JeEnumBadge extends LitElement {
 
       .value {
         padding: 0.125rem 0.375rem;
-        border-radius: var(--je-radius);
+        border-radius: var(--jedi-radius);
         font-size: 0.625rem;
-        font-family: var(--je-font-mono);
+        font-family: var(--jedi-font-mono);
       }
 
       .value.string {
         background: rgba(0, 255, 136, 0.15);
-        color: var(--je-string);
+        color: var(--jedi-string);
       }
 
       .value.number {
         background: rgba(255, 107, 0, 0.15);
-        color: var(--je-number);
+        color: var(--jedi-number);
       }
 
       .value.boolean {
         background: rgba(255, 166, 77, 0.15);
-        color: var(--je-boolean);
+        color: var(--jedi-boolean);
       }
 
       .value.other {
         background: rgba(107, 114, 128, 0.3);
-        color: var(--je-text-muted);
+        color: var(--jedi-text-muted);
       }
     `
   ];
@@ -144,4 +144,4 @@ export class JeEnumBadge extends LitElement {
   }
 }
 
-customElements.define('je-enum-badge', JeEnumBadge);
+customElements.define('jedi-enum-badge', JediEnumBadge);

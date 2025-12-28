@@ -23,7 +23,7 @@ npm run dev    # Dev server with live reload (http://localhost:17080)
 ## Architecture
 
 ### Component Structure
-- `src/je-editor.js` - Main component, manages state and validation
+- `src/jedi-editor.js` - Main component, manages state and validation
 - `src/schema-pane/` - Schema editing (visual + raw modes)
 - `src/data-pane/` - Data editing (visual + raw modes)
 - `src/shared/` - Reusable components (value-block, type-badge, etc.)
@@ -31,14 +31,14 @@ npm run dev    # Dev server with live reload (http://localhost:17080)
 - `src/styles/shared-styles.js` - CSS theme
 
 ### Data Flow
-1. JeEditor receives schema/data via properties or setState()
+1. JediEditor receives schema/data via properties or setState()
 2. Child panes dispatch change events
-3. JeEditor validates via validationService
-4. JeEditor emits schema-change, data-change, validation-change events
+3. JediEditor validates via validationService
+4. JediEditor emits schema-change, data-change, validation-change events
 
 ## Code Conventions
 
-- Lit components with `je-` prefix
+- Lit components with `jedi-` prefix
 - JSDoc for types (no TypeScript)
-- CSS custom properties (`--je-*`)
+- CSS custom properties (`--jedi-*`)
 - Event-driven component communication

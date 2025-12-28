@@ -3,11 +3,11 @@ import { themeStyles } from '../styles/shared-styles.js';
 
 /**
  * Toggle between Raw and Visual editor modes
- * @element je-editor-toggle
+ * @element jedi-editor-toggle
  * @property {string} mode - Current mode ('raw' | 'visual')
  * @fires mode-change - When mode changes, detail: { mode: string }
  */
-export class JeEditorToggle extends LitElement {
+export class JediEditorToggle extends LitElement {
   static properties = {
     mode: { type: String, reflect: true }
   };
@@ -21,8 +21,8 @@ export class JeEditorToggle extends LitElement {
 
       .toggle-container {
         display: flex;
-        background: var(--je-bg-primary);
-        border-radius: var(--je-radius);
+        background: var(--jedi-bg-primary);
+        border-radius: var(--jedi-radius);
         padding: 2px;
         gap: 2px;
       }
@@ -32,20 +32,20 @@ export class JeEditorToggle extends LitElement {
         font-size: 0.75rem;
         font-weight: 500;
         border: none;
-        border-radius: calc(var(--je-radius) - 2px);
+        border-radius: calc(var(--jedi-radius) - 2px);
         cursor: pointer;
         transition: all 0.15s ease;
         background: transparent;
-        color: var(--je-text-muted);
+        color: var(--jedi-text-muted);
       }
 
       button:hover:not(.active) {
-        color: var(--je-text);
+        color: var(--jedi-text);
       }
 
       button.active {
-        background: var(--je-bg-input);
-        color: var(--je-text);
+        background: var(--jedi-bg-input);
+        color: var(--jedi-text);
       }
     `
   ];
@@ -85,4 +85,4 @@ export class JeEditorToggle extends LitElement {
   }
 }
 
-customElements.define('je-editor-toggle', JeEditorToggle);
+customElements.define('jedi-editor-toggle', JediEditorToggle);

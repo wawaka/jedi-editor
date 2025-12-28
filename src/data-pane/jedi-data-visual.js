@@ -1,19 +1,19 @@
 import { LitElement, html, css, unsafeCSS } from 'lit';
 import { themeStyles, buttonStyles, inputStyles, scrollbarStyles } from '../styles/shared-styles.js';
 import { LAYOUT, SCHEMA_TYPES } from '../shared/constants.js';
-import '../shared/je-value-block.js';
+import '../shared/jedi-value-block.js';
 
 const DATA_TYPES = [...SCHEMA_TYPES, 'null'];
 
 /**
  * Data visual editor with recursive value editing
- * @element je-data-visual
+ * @element jedi-data-visual
  * @property {*} data - Data to edit
  * @property {Object} schema - JSON Schema for type hints and ghost properties
  * @property {Array} errors - Validation errors
  * @fires data-change - When data changes, detail: { data }
  */
-export class JeDataVisual extends LitElement {
+export class JediDataVisual extends LitElement {
   static properties = {
     data: { type: Object },
     schema: { type: Object },
@@ -36,7 +36,7 @@ export class JeDataVisual extends LitElement {
       :host {
         display: block;
         padding: 1rem;
-        background: var(--je-bg-secondary);
+        background: var(--jedi-bg-secondary);
       }
 
       .property-grid {
@@ -73,9 +73,9 @@ export class JeDataVisual extends LitElement {
 
       .name-btn {
         font-size: 0.875rem;
-        font-family: var(--je-font-mono);
+        font-family: var(--jedi-font-mono);
         font-weight: 500;
-        color: var(--je-text);
+        color: var(--jedi-text);
         background: none;
         border: none;
         padding: 0;
@@ -85,38 +85,38 @@ export class JeDataVisual extends LitElement {
       }
 
       .name-btn:hover {
-        color: var(--je-info);
+        color: var(--jedi-info);
       }
 
       .name-btn.not-in-schema {
-        border-bottom: 1px solid var(--je-text-dim);
+        border-bottom: 1px solid var(--jedi-text-dim);
       }
 
       .name-btn.has-error {
-        text-decoration: underline wavy var(--je-error);
+        text-decoration: underline wavy var(--jedi-error);
         text-underline-offset: 2px;
       }
 
       .array-index.has-error {
-        text-decoration: underline wavy var(--je-error);
+        text-decoration: underline wavy var(--jedi-error);
         text-underline-offset: 2px;
       }
 
       .array-index {
         font-size: 0.875rem;
-        font-family: var(--je-font-mono);
-        color: var(--je-text-muted);
+        font-family: var(--jedi-font-mono);
+        color: var(--jedi-text-muted);
       }
 
       .ghost-name {
         font-size: 0.875rem;
-        font-family: var(--je-font-mono);
-        color: var(--je-text-muted);
+        font-family: var(--jedi-font-mono);
+        color: var(--jedi-text-muted);
         font-style: italic;
       }
 
       .ghost-name.has-error {
-        text-decoration: underline wavy var(--je-error);
+        text-decoration: underline wavy var(--jedi-error);
         text-underline-offset: 2px;
       }
 
@@ -167,8 +167,8 @@ export class JeDataVisual extends LitElement {
         align-items: center;
         justify-content: center;
         font-size: 0.5rem;
-        background: var(--je-bg-input);
-        color: var(--je-text-muted);
+        background: var(--jedi-bg-input);
+        color: var(--jedi-text-muted);
         border: none;
         cursor: pointer;
         transition: all 0.15s ease;
@@ -176,19 +176,19 @@ export class JeDataVisual extends LitElement {
 
       .delete-btn:hover {
         background: rgba(255, 68, 68, 0.3);
-        color: var(--je-error);
+        color: var(--jedi-error);
       }
 
       .empty-message {
         font-size: 0.75rem;
-        color: var(--je-text-muted);
+        color: var(--jedi-text-muted);
         font-style: italic;
       }
 
       /* Value editing */
       .value-display {
         font-size: 0.75rem;
-        font-family: var(--je-font-mono);
+        font-family: var(--jedi-font-mono);
         background: none;
         border: none;
         padding: 0;
@@ -203,15 +203,15 @@ export class JeDataVisual extends LitElement {
       }
 
       .value-display.string {
-        color: var(--je-string);
+        color: var(--jedi-string);
       }
 
       .value-display.number {
-        color: var(--je-number);
+        color: var(--jedi-number);
       }
 
       .value-display.null {
-        color: var(--je-text-muted);
+        color: var(--jedi-text-muted);
       }
 
       .value-input {
@@ -240,12 +240,12 @@ export class JeDataVisual extends LitElement {
       }
 
       .bool-toggle.on {
-        background: var(--je-success);
+        background: var(--jedi-success);
         box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
       }
 
       .bool-toggle.off {
-        background: var(--je-text-muted);
+        background: var(--jedi-text-muted);
       }
 
       .bool-toggle:hover {
@@ -282,44 +282,44 @@ export class JeDataVisual extends LitElement {
 
       .enum-badge {
         padding: 0.125rem 0.375rem;
-        border-radius: var(--je-radius);
+        border-radius: var(--jedi-radius);
         font-size: 0.625rem;
-        font-family: var(--je-font-mono);
+        font-family: var(--jedi-font-mono);
         border: none;
         cursor: pointer;
         transition: all 0.15s ease;
       }
 
       .enum-badge.selected {
-        background: var(--je-info);
+        background: var(--jedi-info);
         color: white;
       }
 
       .enum-badge:not(.selected) {
-        background: var(--je-bg-input);
-        color: var(--je-text-muted);
+        background: var(--jedi-bg-input);
+        color: var(--jedi-text-muted);
       }
 
       .enum-badge:not(.selected):hover {
-        background: var(--je-bg-hover);
-        color: var(--je-text);
+        background: var(--jedi-bg-hover);
+        color: var(--jedi-text);
       }
 
       .invalid-enum {
         padding: 0.125rem 0.375rem;
-        border-radius: var(--je-radius);
+        border-radius: var(--jedi-radius);
         font-size: 0.625rem;
-        font-family: var(--je-font-mono);
+        font-family: var(--jedi-font-mono);
         background: rgba(255, 68, 68, 0.2);
-        color: var(--je-error);
+        color: var(--jedi-error);
         border: 1px solid rgba(255, 68, 68, 0.5);
       }
 
       .type-menu {
         position: fixed;
-        background: var(--je-bg-input);
+        background: var(--jedi-bg-input);
         border: 1px solid #3a4a6a;
-        border-radius: var(--je-radius);
+        border-radius: var(--jedi-radius);
         padding: 0.25rem;
         z-index: 10000;
         min-width: 100px;
@@ -333,18 +333,18 @@ export class JeDataVisual extends LitElement {
         font-size: 0.75rem;
         background: none;
         border: none;
-        color: var(--je-text);
+        color: var(--jedi-text);
         cursor: pointer;
         border-radius: 2px;
         transition: background 0.15s;
       }
 
       .type-menu button:hover {
-        background: var(--je-bg-hover);
+        background: var(--jedi-bg-hover);
       }
 
       .type-menu button.selected {
-        background: var(--je-info);
+        background: var(--jedi-info);
         color: white;
       }
 
@@ -371,7 +371,7 @@ export class JeDataVisual extends LitElement {
     const isExpanded = this._expandedPaths.has('');
 
     return html`
-      <je-value-block
+      <jedi-value-block
         type="${rootType}"
         ?expanded="${isExpanded}"
         ?clickable="${hasChildren}"
@@ -387,7 +387,7 @@ export class JeDataVisual extends LitElement {
         <div slot="content">
           ${this._renderChildren(this.data, this.schema, [])}
         </div>
-      </je-value-block>
+      </jedi-value-block>
 
       ${this._renderTypeMenu()}
     `;
@@ -507,12 +507,12 @@ export class JeDataVisual extends LitElement {
         <span class="ghost-name ${hasError ? 'has-error' : ''}">${name}</span>
       </div>
       <div class="property-value">
-        <je-value-block
+        <jedi-value-block
           ghost
           type="${schemaType}"
           ghost-hint="click to add"
           @ghost-click="${() => this._addGhostProperty(parentPath, name, schemaNode)}"
-        ></je-value-block>
+        ></jedi-value-block>
       </div>
     `;
   }
@@ -522,7 +522,7 @@ export class JeDataVisual extends LitElement {
 
     if (hasChildren) {
       return html`
-        <je-value-block
+        <jedi-value-block
           type="${valueType}"
           ?expanded="${isExpanded}"
           clickable
@@ -539,18 +539,18 @@ export class JeDataVisual extends LitElement {
           <div slot="content">
             ${this._renderChildren(value, schemaNode, path)}
           </div>
-        </je-value-block>
+        </jedi-value-block>
       `;
     }
 
     // Primitives
     return html`
-      <je-value-block
+      <jedi-value-block
         type="${valueType}"
         @type-click="${(e) => this._openTypeMenu(e.detail.event, path)}"
       >
         ${this._renderPrimitiveEditor(value, valueType, schemaNode, path)}
-      </je-value-block>
+      </jedi-value-block>
     `;
   }
 
@@ -669,29 +669,6 @@ export class JeDataVisual extends LitElement {
       case 'null': return null;
       default: return '';
     }
-  }
-
-  _getGhostProperties(data, schema) {
-    const ghosts = [];
-    if (schema?.properties) {
-      const existingKeys = Object.keys(data);
-      for (const [key, propSchema] of Object.entries(schema.properties)) {
-        if (!existingKeys.includes(key)) {
-          ghosts.push({ name: key, schema: propSchema });
-        }
-      }
-    }
-    return ghosts;
-  }
-
-  _getDisplayValue(value, type) {
-    if (type === 'object') {
-      return `{${Object.keys(value).length}}`;
-    }
-    if (type === 'array') {
-      return `[${value.length}]`;
-    }
-    return String(value);
   }
 
   _formatDisplayValue(value, type) {
@@ -970,4 +947,4 @@ export class JeDataVisual extends LitElement {
   }
 }
 
-customElements.define('je-data-visual', JeDataVisual);
+customElements.define('jedi-data-visual', JediDataVisual);

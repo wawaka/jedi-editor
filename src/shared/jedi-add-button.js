@@ -3,10 +3,10 @@ import { themeStyles } from '../styles/shared-styles.js';
 
 /**
  * Square add button with plus icon
- * @element je-add-button
+ * @element jedi-add-button
  * @fires click - When button is clicked
  */
-export class JeAddButton extends LitElement {
+export class JediAddButton extends LitElement {
   static styles = [
     themeStyles,
     css`
@@ -20,9 +20,9 @@ export class JeAddButton extends LitElement {
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: var(--je-radius);
+        border-radius: var(--jedi-radius);
         background: rgba(0, 255, 136, 0.1);
-        color: var(--je-success);
+        color: var(--jedi-success);
         border: none;
         cursor: pointer;
         transition: all 0.15s ease;
@@ -56,4 +56,4 @@ export class JeAddButton extends LitElement {
   }
 }
 
-customElements.define('je-add-button', JeAddButton);
+customElements.define('jedi-add-button', JediAddButton);

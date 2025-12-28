@@ -5,13 +5,13 @@
  * No persistence or storage - those are external concerns.
  *
  * Usage:
- *   <je-editor
+ *   <jedi-editor
  *     .initialSchema="${mySchema}"
  *     .initialData="${myData}"
  *     @schema-change="${e => console.log(e.detail.schema)}"
  *     @data-change="${e => console.log(e.detail.data)}"
  *     @validation-change="${e => console.log(e.detail.isValid, e.detail.errors)}"
- *   ></je-editor>
+ *   ></jedi-editor>
  *
  * Public API:
  *   editor.schema        // get/set schema
@@ -24,23 +24,23 @@
  */
 
 // Main container
-export { JeEditor } from './je-editor.js';
+export { JediEditor } from './jedi-editor.js';
 
 // Panes
-export { JeSchemaPane } from './schema-pane/je-schema-pane.js';
-export { JeDataPane } from './data-pane/je-data-pane.js';
+export { JediSchemaPane } from './schema-pane/jedi-schema-pane.js';
+export { JediDataPane } from './data-pane/jedi-data-pane.js';
 
 // Visual editors
-export { JeSchemaVisual } from './schema-pane/je-schema-visual.js';
-export { JeDataVisual } from './data-pane/je-data-visual.js';
+export { JediSchemaVisual } from './schema-pane/jedi-schema-visual.js';
+export { JediDataVisual } from './data-pane/jedi-data-visual.js';
 
 // Shared components
-export { JeRawEditor } from './shared/je-raw-editor.js';
-export { JeEditorToggle } from './shared/je-editor-toggle.js';
-export { JeAddButton } from './shared/je-add-button.js';
-export { JeEnumBadge } from './shared/je-enum-badge.js';
-export { JeTypeBadge } from './shared/je-type-badge.js';
-export { JeValueBlock } from './shared/je-value-block.js';
+export { JediRawEditor } from './shared/jedi-raw-editor.js';
+export { JediEditorToggle } from './shared/jedi-editor-toggle.js';
+export { JediAddButton } from './shared/jedi-add-button.js';
+export { JediEnumBadge } from './shared/jedi-enum-badge.js';
+export { JediTypeBadge } from './shared/jedi-type-badge.js';
+export { JediValueBlock } from './shared/jedi-value-block.js';
 
 // Services
 export { validationService } from './services/validation-service.js';

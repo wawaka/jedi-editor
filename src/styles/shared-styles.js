@@ -6,45 +6,45 @@ import { css } from 'lit';
 export const themeStyles = css`
   :host {
     /* Background colors */
-    --je-bg-primary: #0a0e27;
-    --je-bg-secondary: #0f1629;
-    --je-bg-input: #1e2a4a;
-    --je-bg-hover: #2a3a5a;
+    --jedi-bg-primary: #0a0e27;
+    --jedi-bg-secondary: #0f1629;
+    --jedi-bg-input: #1e2a4a;
+    --jedi-bg-hover: #2a3a5a;
 
     /* Border colors */
-    --je-border: #1e2a4a;
-    --je-border-light: rgba(255, 255, 255, 0.1);
+    --jedi-border: #1e2a4a;
+    --jedi-border-light: rgba(255, 255, 255, 0.1);
 
     /* Accent colors */
-    --je-accent: #ff6b00;
-    --je-success: #00ff88;
-    --je-error: #ff4444;
-    --je-warning: #ffa64d;
-    --je-info: #4da6ff;
+    --jedi-accent: #ff6b00;
+    --jedi-success: #00ff88;
+    --jedi-error: #ff4444;
+    --jedi-warning: #ffa64d;
+    --jedi-info: #4da6ff;
 
     /* Text colors */
-    --je-text: #ffffff;
-    --je-text-muted: #9ca3af;
-    --je-text-dim: #6b7280;
+    --jedi-text: #ffffff;
+    --jedi-text-muted: #9ca3af;
+    --jedi-text-dim: #6b7280;
 
     /* Type colors */
-    --je-string: #00ff88;
-    --je-number: #ff6b00;
-    --je-boolean: #ffa64d;
-    --je-object: #4da6ff;
-    --je-array: #06b6d4;
-    --je-null: #9ca3af;
+    --jedi-string: #00ff88;
+    --jedi-number: #ff6b00;
+    --jedi-boolean: #ffa64d;
+    --jedi-object: #4da6ff;
+    --jedi-array: #06b6d4;
+    --jedi-null: #9ca3af;
 
     /* Sizing */
-    --je-radius: 4px;
-    --je-radius-lg: 8px;
+    --jedi-radius: 4px;
+    --jedi-radius-lg: 8px;
 
     /* Fonts */
-    --je-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-    --je-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --jedi-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --jedi-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 
-    font-family: var(--je-font-sans);
-    color: var(--je-text);
+    font-family: var(--jedi-font-sans);
+    color: var(--jedi-text);
   }
 `;
 
@@ -59,14 +59,14 @@ export const buttonStyles = css`
     padding: 0.375rem 0.75rem;
     font-size: 0.75rem;
     font-weight: 500;
-    border-radius: var(--je-radius);
+    border-radius: var(--jedi-radius);
     border: none;
     cursor: pointer;
     transition: all 0.15s ease;
   }
 
   .btn-primary {
-    background: var(--je-info);
+    background: var(--jedi-info);
     color: white;
   }
   .btn-primary:hover {
@@ -74,7 +74,7 @@ export const buttonStyles = css`
   }
 
   .btn-success {
-    background: var(--je-success);
+    background: var(--jedi-success);
     color: #0a0e27;
   }
   .btn-success:hover {
@@ -82,7 +82,7 @@ export const buttonStyles = css`
   }
 
   .btn-danger {
-    background: var(--je-error);
+    background: var(--jedi-error);
     color: white;
   }
   .btn-danger:hover {
@@ -91,11 +91,11 @@ export const buttonStyles = css`
 
   .btn-ghost {
     background: transparent;
-    color: var(--je-text-muted);
+    color: var(--jedi-text-muted);
   }
   .btn-ghost:hover {
-    background: var(--je-bg-input);
-    color: var(--je-text);
+    background: var(--jedi-bg-input);
+    color: var(--jedi-text);
   }
 
   .btn-icon {
@@ -110,46 +110,22 @@ export const buttonStyles = css`
  */
 export const inputStyles = css`
   .input {
-    background: var(--je-bg-input);
-    border: 1px solid var(--je-border);
-    border-radius: var(--je-radius);
+    background: var(--jedi-bg-input);
+    border: 1px solid var(--jedi-border);
+    border-radius: var(--jedi-radius);
     padding: 0.375rem 0.5rem;
     font-size: 0.75rem;
-    font-family: var(--je-font-mono);
-    color: var(--je-text);
+    font-family: var(--jedi-font-mono);
+    color: var(--jedi-text);
     outline: none;
     transition: border-color 0.15s ease;
   }
   .input:focus {
-    border-color: var(--je-info);
+    border-color: var(--jedi-info);
   }
   .input::placeholder {
-    color: var(--je-text-dim);
+    color: var(--jedi-text-dim);
   }
-`;
-
-/**
- * Type badge styles
- */
-export const typeBadgeStyles = css`
-  .type-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.125rem 0.5rem;
-    border-radius: var(--je-radius);
-    font-size: 0.625rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    min-width: 3.5rem;
-  }
-
-  .type-badge.string { background: #047857; color: #d1fae5; }
-  .type-badge.number, .type-badge.integer { background: #7e22ce; color: #f3e8ff; }
-  .type-badge.boolean { background: #b45309; color: #fef3c7; }
-  .type-badge.object { background: #1d4ed8; color: #dbeafe; }
-  .type-badge.array { background: #0891b2; color: #cffafe; }
-  .type-badge.null { background: #4b5563; color: #f3f4f6; }
 `;
 
 /**
@@ -161,13 +137,13 @@ export const scrollbarStyles = css`
     height: 8px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--je-bg-primary);
+    background: var(--jedi-bg-primary);
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--je-border);
+    background: var(--jedi-border);
     border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--je-text-dim);
+    background: var(--jedi-text-dim);
   }
 `;

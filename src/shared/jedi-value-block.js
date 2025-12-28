@@ -1,13 +1,13 @@
 import { LitElement, html, css, unsafeCSS } from 'lit';
 import { themeStyles } from '../styles/shared-styles.js';
 import { TYPE_COLORS, LAYOUT } from './constants.js';
-import './je-type-badge.js';
-import './je-add-button.js';
-import './je-enum-badge.js';
+import './jedi-type-badge.js';
+import './jedi-add-button.js';
+import './jedi-enum-badge.js';
 
 /**
  * Reusable value block component for schema and data panes
- * @element je-value-block
+ * @element jedi-value-block
  *
  * @property {string} type - Value type (string, number, integer, boolean, object, array, null)
  * @property {boolean} expanded - Whether nested content is visible
@@ -35,7 +35,7 @@ import './je-enum-badge.js';
  * @slot content - Nested content area
  * @slot enum-editor - Enum editor content
  */
-export class JeValueBlock extends LitElement {
+export class JediValueBlock extends LitElement {
   static properties = {
     // Core
     type: { type: String },
@@ -67,9 +67,9 @@ export class JeValueBlock extends LitElement {
       }
 
       .block {
-        border-radius: var(--je-radius);
+        border-radius: var(--jedi-radius);
         border: 1px solid;
-        background: var(--je-bg-secondary);
+        background: var(--jedi-bg-secondary);
       }
 
       :host([ghost]) .block {
@@ -98,34 +98,34 @@ export class JeValueBlock extends LitElement {
 
       .block-content {
         padding: 0.75rem;
-        background: var(--je-bg-secondary);
+        background: var(--jedi-bg-secondary);
         border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .count-display {
         font-size: 0.75rem;
-        font-family: var(--je-font-mono);
-        color: var(--je-text-muted);
+        font-family: var(--jedi-font-mono);
+        color: var(--jedi-text-muted);
         user-select: none;
       }
 
       .items-label {
         font-size: 0.75rem;
-        color: var(--je-text-dim);
+        color: var(--jedi-text-dim);
       }
 
       .ghost-hint {
         font-size: 0.75rem;
-        color: var(--je-text-muted);
+        color: var(--jedi-text-muted);
       }
 
       .ghost-enum-btn {
         padding: 0.125rem 0.375rem;
-        border-radius: var(--je-radius);
+        border-radius: var(--jedi-radius);
         font-size: 0.625rem;
         background: transparent;
-        color: var(--je-text-dim);
-        border: 1px dashed var(--je-text-dim);
+        color: var(--jedi-text-dim);
+        border: 1px dashed var(--jedi-text-dim);
         cursor: pointer;
         opacity: 0;
         transition: opacity 0.15s;
@@ -136,8 +136,8 @@ export class JeValueBlock extends LitElement {
       }
 
       .ghost-enum-btn:hover {
-        color: var(--je-info);
-        border-color: var(--je-info);
+        color: var(--jedi-info);
+        border-color: var(--jedi-info);
       }
 
       :host([ghost]) .ghost-content {
@@ -187,7 +187,7 @@ export class JeValueBlock extends LitElement {
         >
           <div class="block-header">
             <div class="ghost-content">
-              <je-type-badge type="${this.type}"></je-type-badge>
+              <jedi-type-badge type="${this.type}"></jedi-type-badge>
               ${this.ghostHint ? html`<span class="ghost-hint">${this.ghostHint}</span>` : ''}
               <slot></slot>
             </div>
@@ -202,11 +202,11 @@ export class JeValueBlock extends LitElement {
           class="block-header ${this.clickable ? 'clickable' : ''}"
           @click="${this._handleHeaderClick}"
         >
-          <je-type-badge
+          <jedi-type-badge
             type="${this.type}"
             ?clickable="${this.typeClickable}"
             @click="${this._handleTypeBadgeClick}"
-          ></je-type-badge>
+          ></jedi-type-badge>
           ${this._renderEnumBadge()}
           ${this._renderGhostEnumButton()}
           ${this._renderAddButton()}
@@ -232,10 +232,10 @@ export class JeValueBlock extends LitElement {
   _renderEnumBadge() {
     if (!this.enumValues || this.enumValues.length === 0) return '';
     return html`
-      <je-enum-badge
+      <jedi-enum-badge
         .values="${this.enumValues}"
         @enum-badge-click="${this._handleEnumBadgeClick}"
-      ></je-enum-badge>
+      ></jedi-enum-badge>
     `;
   }
 
@@ -252,10 +252,10 @@ export class JeValueBlock extends LitElement {
   _renderAddButton() {
     if (!this.showAddButton) return '';
     return html`
-      <je-add-button
+      <jedi-add-button
         title="${this.addButtonTitle}"
         @click="${this._handleAddClick}"
-      ></je-add-button>
+      ></jedi-add-button>
     `;
   }
 
@@ -275,7 +275,7 @@ export class JeValueBlock extends LitElement {
   _handleHeaderClick(e) {
     if (!this.clickable) return;
     // Don't toggle if clicking on interactive elements
-    if (e.target.closest('je-type-badge, je-add-button, je-enum-badge, button')) return;
+    if (e.target.closest('jedi-type-badge, jedi-add-button, jedi-enum-badge, button')) return;
 
     e.stopPropagation();
     this.dispatchEvent(new CustomEvent('toggle-expand', {
@@ -333,4 +333,4 @@ export class JeValueBlock extends LitElement {
   }
 }
 
-customElements.define('je-value-block', JeValueBlock);
+customElements.define('jedi-value-block', JediValueBlock);

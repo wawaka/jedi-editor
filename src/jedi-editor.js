@@ -2,21 +2,21 @@ import { LitElement, html, css } from 'lit';
 import { themeStyles } from './styles/shared-styles.js';
 import { validationService } from './services/validation-service.js';
 import { DEFAULT_SCHEMA, DEFAULT_DATA } from './shared/constants.js';
-import './schema-pane/je-schema-pane.js';
-import './data-pane/je-data-pane.js';
+import './schema-pane/jedi-schema-pane.js';
+import './data-pane/jedi-data-pane.js';
 
 /**
  * Main JSON Editor container with dual-pane layout
  * A pure editing component - receives schema/data, emits change events.
  *
- * @element je-editor
+ * @element jedi-editor
  * @property {Object} initialSchema - Initial schema (optional, uses default if not provided)
  * @property {*} initialData - Initial data (optional, uses default if not provided)
  * @fires schema-change - When schema changes, detail: { schema }
  * @fires data-change - When data changes, detail: { data }
  * @fires validation-change - When validation state changes, detail: { isValid, errors }
  */
-export class JeEditor extends LitElement {
+export class JediEditor extends LitElement {
   static properties = {
     initialSchema: { type: Object, attribute: 'initial-schema' },
     initialData: { type: Object, attribute: 'initial-data' },
@@ -34,8 +34,8 @@ export class JeEditor extends LitElement {
         display: flex;
         flex-direction: column;
         height: 100%;
-        background: var(--je-bg-primary);
-        font-family: var(--je-font-sans);
+        background: var(--jedi-bg-primary);
+        font-family: var(--jedi-font-sans);
       }
 
       .panes {
@@ -55,7 +55,7 @@ export class JeEditor extends LitElement {
       }
 
       .pane:first-child {
-        border-right: 1px solid var(--je-border);
+        border-right: 1px solid var(--jedi-border);
       }
     `
   ];
@@ -94,21 +94,21 @@ export class JeEditor extends LitElement {
     return html`
       <div class="panes">
         <div class="pane">
-          <je-schema-pane
+          <jedi-schema-pane
             .schema="${this._schema}"
             ?debug-grid="${this._debugGrid}"
             @schema-change="${this._handleSchemaChange}"
-          ></je-schema-pane>
+          ></jedi-schema-pane>
         </div>
         <div class="pane">
-          <je-data-pane
+          <jedi-data-pane
             .data="${this._data}"
             .schema="${this._schema}"
             ?is-valid="${this._isValid}"
             .errors="${this._errors}"
             ?debug-grid="${this._debugGrid}"
             @data-change="${this._handleDataChange}"
-          ></je-data-pane>
+          ></jedi-data-pane>
         </div>
       </div>
     `;
@@ -230,4 +230,4 @@ export class JeEditor extends LitElement {
   }
 }
 
-customElements.define('je-editor', JeEditor);
+customElements.define('jedi-editor', JediEditor);

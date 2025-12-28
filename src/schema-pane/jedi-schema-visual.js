@@ -1,15 +1,15 @@
 import { LitElement, html, css, unsafeCSS } from 'lit';
 import { themeStyles, inputStyles } from '../styles/shared-styles.js';
 import { SCHEMA_TYPES, LAYOUT } from '../shared/constants.js';
-import '../shared/je-value-block.js';
+import '../shared/jedi-value-block.js';
 
 /**
  * Visual schema editor with recursive property/items editing
- * @element je-schema-visual
+ * @element jedi-schema-visual
  * @property {Object} schema - JSON Schema object
  * @fires schema-change - When schema changes, detail: { schema }
  */
-export class JeSchemaVisual extends LitElement {
+export class JediSchemaVisual extends LitElement {
   static properties = {
     schema: { type: Object },
     debugGrid: { type: Boolean, attribute: 'debug-grid' },
@@ -23,7 +23,7 @@ export class JeSchemaVisual extends LitElement {
       :host {
         display: block;
         padding: 1rem;
-        background: var(--je-bg-secondary);
+        background: var(--jedi-bg-secondary);
       }
 
       .property-grid {
@@ -66,9 +66,9 @@ export class JeSchemaVisual extends LitElement {
 
       .name-btn {
         font-size: 0.875rem;
-        font-family: var(--je-font-mono);
+        font-family: var(--jedi-font-mono);
         font-weight: 500;
-        color: var(--je-text);
+        color: var(--jedi-text);
         background: none;
         border: none;
         padding: 0;
@@ -78,11 +78,11 @@ export class JeSchemaVisual extends LitElement {
       }
 
       .name-btn:hover {
-        color: var(--je-info);
+        color: var(--jedi-info);
       }
 
       .name-btn.required {
-        border-bottom: 1px solid var(--je-error);
+        border-bottom: 1px solid var(--jedi-error);
       }
 
       .name-input {
@@ -132,23 +132,23 @@ export class JeSchemaVisual extends LitElement {
         justify-content: center;
         border-radius: 2px;
         font-size: 0.5rem;
-        background: var(--je-bg-input);
+        background: var(--jedi-bg-input);
         border: none;
         cursor: pointer;
         transition: all 0.15s;
       }
 
       .action-btn.required {
-        color: var(--je-text-dim);
+        color: var(--jedi-text-dim);
       }
 
       .action-btn.required.active {
-        color: var(--je-warning);
+        color: var(--jedi-warning);
         background: rgba(255, 166, 77, 0.3);
       }
 
       .action-btn.required:hover {
-        color: var(--je-warning);
+        color: var(--jedi-warning);
         background: rgba(255, 166, 77, 0.2);
       }
 
@@ -157,19 +157,19 @@ export class JeSchemaVisual extends LitElement {
       }
 
       .action-btn.delete {
-        color: var(--je-text-dim);
+        color: var(--jedi-text-dim);
       }
 
       .action-btn.delete:hover {
-        color: var(--je-error);
+        color: var(--jedi-error);
         background: rgba(255, 68, 68, 0.2);
       }
 
       .type-menu {
         position: fixed;
-        background: var(--je-bg-input);
+        background: var(--jedi-bg-input);
         border: 1px solid #3a4a6a;
-        border-radius: var(--je-radius);
+        border-radius: var(--jedi-radius);
         padding: 0.25rem;
         z-index: 10000;
         min-width: 100px;
@@ -183,24 +183,24 @@ export class JeSchemaVisual extends LitElement {
         font-size: 0.75rem;
         background: none;
         border: none;
-        color: var(--je-text);
+        color: var(--jedi-text);
         cursor: pointer;
         border-radius: 2px;
         transition: background 0.15s;
       }
 
       .type-menu button:hover {
-        background: var(--je-bg-hover);
+        background: var(--jedi-bg-hover);
       }
 
       .type-menu button.selected {
-        background: var(--je-info);
+        background: var(--jedi-info);
         color: white;
       }
 
       .empty-message {
         font-size: 0.75rem;
-        color: var(--je-text-dim);
+        color: var(--jedi-text-dim);
         font-style: italic;
         padding: 0.25rem 0;
       }
@@ -209,7 +209,7 @@ export class JeSchemaVisual extends LitElement {
       .enum-editor {
         padding: 0.5rem;
         background: rgba(77, 166, 255, 0.05);
-        border-radius: var(--je-radius);
+        border-radius: var(--jedi-radius);
         margin-top: 0.5rem;
       }
 
@@ -222,19 +222,19 @@ export class JeSchemaVisual extends LitElement {
 
       .enum-header span {
         font-size: 0.75rem;
-        color: var(--je-text-muted);
+        color: var(--jedi-text-muted);
       }
 
       .enum-header button {
         font-size: 0.625rem;
-        color: var(--je-text-dim);
+        color: var(--jedi-text-dim);
         background: none;
         border: none;
         cursor: pointer;
       }
 
       .enum-header button:hover {
-        color: var(--je-error);
+        color: var(--jedi-error);
       }
 
       .enum-value-row {
@@ -247,7 +247,7 @@ export class JeSchemaVisual extends LitElement {
       .enum-value-row .index {
         width: 1rem;
         font-size: 0.625rem;
-        color: var(--je-text-dim);
+        color: var(--jedi-text-dim);
         text-align: right;
       }
 
@@ -255,9 +255,9 @@ export class JeSchemaVisual extends LitElement {
         flex: 1;
         text-align: left;
         font-size: 0.75rem;
-        font-family: var(--je-font-mono);
+        font-family: var(--jedi-font-mono);
         padding: 0.125rem 0.5rem;
-        border-radius: var(--je-radius);
+        border-radius: var(--jedi-radius);
         background: none;
         border: none;
         cursor: pointer;
@@ -265,21 +265,21 @@ export class JeSchemaVisual extends LitElement {
       }
 
       .enum-value-row .value-btn:hover {
-        background: var(--je-bg-input);
+        background: var(--jedi-bg-input);
       }
 
-      .enum-value-row .value-btn.string { color: var(--je-string); }
-      .enum-value-row .value-btn.number { color: var(--je-number); }
-      .enum-value-row .value-btn.boolean { color: var(--je-boolean); }
+      .enum-value-row .value-btn.string { color: var(--jedi-string); }
+      .enum-value-row .value-btn.number { color: var(--jedi-number); }
+      .enum-value-row .value-btn.boolean { color: var(--jedi-boolean); }
 
       .enum-value-row .delete-btn {
         width: 1rem;
         height: 1rem;
         font-size: 0.625rem;
-        background: var(--je-bg-input);
+        background: var(--jedi-bg-input);
         border: none;
         border-radius: 2px;
-        color: var(--je-text-dim);
+        color: var(--jedi-text-dim);
         cursor: pointer;
         opacity: 0;
         transition: all 0.15s;
@@ -291,7 +291,7 @@ export class JeSchemaVisual extends LitElement {
 
       .enum-value-row .delete-btn:hover {
         background: rgba(255, 68, 68, 0.2);
-        color: var(--je-error);
+        color: var(--jedi-error);
       }
 
       .add-enum-value {
@@ -299,7 +299,7 @@ export class JeSchemaVisual extends LitElement {
         align-items: center;
         gap: 0.25rem;
         font-size: 0.75rem;
-        color: var(--je-success);
+        color: var(--jedi-success);
         background: none;
         border: none;
         cursor: pointer;
@@ -343,7 +343,7 @@ export class JeSchemaVisual extends LitElement {
     const hasEnum = Array.isArray(this.schema?.enum) && this.schema.enum.length > 0;
 
     return html`
-      <je-value-block
+      <jedi-value-block
         type="${type}"
         ?expanded="${isExpanded}"
         ?clickable="${hasChildren}"
@@ -364,7 +364,7 @@ export class JeSchemaVisual extends LitElement {
         <div slot="enum-editor">
           ${this._renderEnumEditor(this.schema, [])}
         </div>
-      </je-value-block>
+      </jedi-value-block>
     `;
   }
 
@@ -414,7 +414,7 @@ export class JeSchemaVisual extends LitElement {
         </div>
       </div>
       <div class="property-value">
-        <je-value-block
+        <jedi-value-block
           type="${type}"
           ?expanded="${isExpanded}"
           ?clickable="${hasChildren}"
@@ -437,7 +437,7 @@ export class JeSchemaVisual extends LitElement {
           <div slot="enum-editor">
             ${this._renderEnumEditor(node, path)}
           </div>
-        </je-value-block>
+        </jedi-value-block>
       </div>
     `;
   }
@@ -492,7 +492,7 @@ export class JeSchemaVisual extends LitElement {
       const itemHasEnum = Array.isArray(items?.enum) && items.enum.length > 0;
 
       return html`
-        <je-value-block
+        <jedi-value-block
           type="${itemType}"
           ?expanded="${itemIsExpanded}"
           ?clickable="${itemHasChildren}"
@@ -515,7 +515,7 @@ export class JeSchemaVisual extends LitElement {
           <div slot="enum-editor">
             ${this._renderEnumEditor(items, itemsPath)}
           </div>
-        </je-value-block>
+        </jedi-value-block>
       `;
     }
 
@@ -848,4 +848,4 @@ export class JeSchemaVisual extends LitElement {
   }
 }
 
-customElements.define('je-schema-visual', JeSchemaVisual);
+customElements.define('jedi-schema-visual', JediSchemaVisual);

@@ -7,8 +7,6 @@ class ValidationService {
     this._validator = null;
     this._initialized = false;
     this._initPromise = null;
-    this._debounceTimer = null;
-    this._debounceDelay = 150;
   }
 
   /**
@@ -104,32 +102,6 @@ class ValidationService {
         isValid: false,
         errors: [{ path: '', message: err.message, keyword: 'error' }]
       };
-    }
-  }
-
-  /**
-   * Debounced validation
-   * @param {*} data - Data to validate
-   * @param {function} callback - Callback with validation result
-   */
-  validateDebounced(data, callback) {
-    if (this._debounceTimer) {
-      clearTimeout(this._debounceTimer);
-    }
-
-    this._debounceTimer = setTimeout(() => {
-      const result = this.validate(data);
-      callback(result);
-    }, this._debounceDelay);
-  }
-
-  /**
-   * Cancel any pending debounced validation
-   */
-  cancelDebounce() {
-    if (this._debounceTimer) {
-      clearTimeout(this._debounceTimer);
-      this._debounceTimer = null;
     }
   }
 
