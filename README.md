@@ -20,6 +20,17 @@ npm run dev
 
 Open http://localhost:17080
 
+### Updating vendor dependencies
+
+When you update versions in `package.json`:
+
+```bash
+npm install
+npm run bundle-deps
+```
+
+This rebuilds `vendor/lit.js`, `vendor/ajv.js`, `vendor/ajv-formats.js`. Commit the updated vendor files.
+
 ## Components
 
 ```html
