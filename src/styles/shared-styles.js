@@ -1,48 +1,49 @@
 import { css } from 'lit';
+import { THEMES, SHARED_THEME, DEFAULT_THEME } from './themes.js';
 
 /**
- * Shared CSS custom properties theme
+ * Generate CSS custom properties string from theme
+ * @param {string} themeName
+ * @returns {string}
+ */
+export function generateThemeCSS(themeName) {
+  const theme = THEMES[themeName];
+  if (!theme) return '';
+
+  const lines = [];
+
+  // Theme-specific properties
+  for (const [key, value] of Object.entries(theme)) {
+    if (key !== 'name') {
+      lines.push(`--jedi-${key}: ${value};`);
+    }
+  }
+
+  // Shared properties
+  for (const [key, value] of Object.entries(SHARED_THEME)) {
+    lines.push(`--jedi-${key}: ${value};`);
+  }
+
+  return lines.join('\n    ');
+}
+
+/**
+ * Theme variable definitions - ONLY use in jedi-editor root component.
+ * This sets the actual CSS custom property values.
+ */
+export const themeVarsStyles = css`
+  :host {
+    ${css([generateThemeCSS(DEFAULT_THEME)])}
+  }
+`;
+
+/**
+ * Base theme styles for all components.
+ * Does NOT define CSS custom properties - inherits them from jedi-editor.
+ * Only sets font-family and color using the inherited variables.
  */
 export const themeStyles = css`
   :host {
-    /* Background colors */
-    --jedi-bg-primary: #0a0e27;
-    --jedi-bg-secondary: #0f1629;
-    --jedi-bg-input: #1e2a4a;
-    --jedi-bg-hover: #2a3a5a;
-
-    /* Border colors */
-    --jedi-border: #1e2a4a;
-    --jedi-border-light: rgba(255, 255, 255, 0.1);
-
-    /* Accent colors */
-    --jedi-accent: #ff6b00;
-    --jedi-success: #00ff88;
-    --jedi-error: #ff4444;
-    --jedi-warning: #ffa64d;
-    --jedi-info: #4da6ff;
-
-    /* Text colors */
-    --jedi-text: #ffffff;
-    --jedi-text-muted: #9ca3af;
-    --jedi-text-dim: #6b7280;
-
-    /* Type colors */
-    --jedi-string: #00ff88;
-    --jedi-number: #ff6b00;
-    --jedi-boolean: #ffa64d;
-    --jedi-object: #4da6ff;
-    --jedi-array: #06b6d4;
-    --jedi-null: #9ca3af;
-
-    /* Sizing */
-    --jedi-radius: 4px;
-    --jedi-radius-lg: 8px;
-
-    /* Fonts */
-    --jedi-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-    --jedi-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-
     font-family: var(--jedi-font-sans);
     color: var(--jedi-text);
   }

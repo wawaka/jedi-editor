@@ -21,6 +21,8 @@
  *   editor.validate()    // trigger validation
  *   editor.getState()    // get { schema, data, isValid, errors }
  *   editor.setState(schema, data)  // set both at once
+ *   editor.theme          // get/set theme ('dark' | 'light')
+ *   editor.getAvailableThemes()  // get list of theme names
  */
 
 // Main container
@@ -41,9 +43,14 @@ export { JediAddButton } from './shared/jedi-add-button.js';
 export { JediEnumBadge } from './shared/jedi-enum-badge.js';
 export { JediTypeBadge } from './shared/jedi-type-badge.js';
 export { JediValueBlock } from './shared/jedi-value-block.js';
+export { JediThemeSelector } from './shared/jedi-theme-selector.js';
 
 // Services
 export { validationService } from './services/validation-service.js';
+export { themeService } from './services/theme-service.js';
 
 // Constants and types
 export { TYPE_COLORS, SCHEMA_TYPES, DEFAULT_SCHEMA, DEFAULT_DATA, LAYOUT } from './shared/constants.js';
+
+// Themes
+export { THEMES, THEME_NAMES, DEFAULT_THEME } from './styles/themes.js';

@@ -29,8 +29,29 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: #0a0e27;
-      color: #ffffff;
+      background: var(--page-bg, #0a0e27);
+      color: var(--page-text, #ffffff);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    body.theme-light {
+      --page-bg: #f8fafc;
+      --page-text: #1e293b;
+      --page-bg-secondary: #ffffff;
+      --page-border: #e2e8f0;
+      --page-text-muted: #64748b;
+      --page-accent: #2563eb;
+      --page-success: #059669;
+    }
+
+    body.theme-dark {
+      --page-bg: #0a0e27;
+      --page-text: #ffffff;
+      --page-bg-secondary: #0f1629;
+      --page-border: #1e2a4a;
+      --page-text-muted: #9ca3af;
+      --page-accent: #4da6ff;
+      --page-success: #00ff88;
     }
 
     .container {
@@ -45,10 +66,11 @@
       justify-content: space-between;
       align-items: center;
       padding: 0.75rem 1rem;
-      background: #0f1629;
+      background: var(--page-bg-secondary, #0f1629);
       border-radius: 0.5rem 0.5rem 0 0;
-      border: 1px solid #1e2a4a;
+      border: 1px solid var(--page-border, #1e2a4a);
       border-bottom: none;
+      transition: background 0.2s ease, border-color 0.2s ease;
     }
 
     header h1 {
@@ -64,7 +86,7 @@
       font-weight: 500;
       padding: 0.125rem 0.5rem;
       background: rgba(77, 166, 255, 0.2);
-      color: #4da6ff;
+      color: var(--page-accent, #4da6ff);
       border-radius: 0.25rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -72,7 +94,7 @@
 
     header p {
       font-size: 0.75rem;
-      color: #9ca3af;
+      color: var(--page-text-muted, #9ca3af);
     }
 
     .controls {
@@ -100,13 +122,13 @@
     }
 
     .controls button.secondary {
-      background: #1e2a4a;
-      color: #9ca3af;
+      background: var(--page-border, #1e2a4a);
+      color: var(--page-text-muted, #9ca3af);
     }
 
     .controls button.secondary:hover {
-      background: #2d3a5a;
-      color: white;
+      background: var(--page-bg, #2d3a5a);
+      color: var(--page-text, white);
     }
 
     .controls button.danger {
@@ -122,25 +144,26 @@
     .controls .divider {
       width: 1px;
       height: 1.25rem;
-      background: #1e2a4a;
+      background: var(--page-border, #1e2a4a);
     }
 
     .controls .status {
       font-size: 0.75rem;
-      color: #9ca3af;
+      color: var(--page-text-muted, #9ca3af);
       padding: 0 0.5rem;
     }
 
     .controls .status.saved {
-      color: #00ff88;
+      color: var(--page-success, #00ff88);
     }
 
     .editor-wrapper {
       flex: 1;
       min-height: 0;
-      border: 1px solid #1e2a4a;
+      border: 1px solid var(--page-border, #1e2a4a);
       border-radius: 0 0 0.5rem 0.5rem;
       overflow: hidden;
+      transition: border-color 0.2s ease;
     }
 
     jedi-editor {
@@ -152,8 +175,9 @@
       align-items: center;
       justify-content: center;
       height: 100%;
-      color: #9ca3af;
+      color: var(--page-text-muted, #9ca3af);
       font-size: 0.875rem;
+      background: var(--page-bg-secondary, #0f1629);
     }
 
     .loading::after {
@@ -161,8 +185,8 @@
       width: 1.5rem;
       height: 1.5rem;
       margin-left: 0.75rem;
-      border: 2px solid #1e2a4a;
-      border-top-color: #4da6ff;
+      border: 2px solid var(--page-border, #1e2a4a);
+      border-top-color: var(--page-accent, #4da6ff);
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -184,6 +208,8 @@
       </div>
       <div class="controls">
         <span id="status" class="status"></span>
+        <div class="divider"></div>
+        <jedi-theme-selector id="theme-selector"></jedi-theme-selector>
         <div class="divider"></div>
         <button id="btn-grid" class="secondary" title="Toggle debug grid">Grid</button>
         <button id="btn-reset" class="secondary" title="Reset to example data">Reset</button>
@@ -320,6 +346,15 @@
       }
     }
 
+    // Theme selector element
+    const themeSelector = document.getElementById('theme-selector');
+
+    // Apply theme to page body
+    function applyPageTheme(theme) {
+      document.body.classList.remove('theme-dark', 'theme-light');
+      document.body.classList.add(`theme-${theme}`);
+    }
+
     // Wait for component to be defined and ready
     customElements.whenDefined('jedi-editor').then(async () => {
       // Wait for first render cycle to complete
@@ -332,6 +367,10 @@
       } else {
         editor.setState(EXAMPLE_SCHEMA, EXAMPLE_DATA);
       }
+
+      // Initialize theme selector and page theme
+      themeSelector.theme = editor.theme;
+      applyPageTheme(editor.theme);
 
       // Show editor
       document.getElementById('loading').style.display = 'none';
@@ -354,6 +393,18 @@
 
     editor.addEventListener('validation-change', (e) => {
       console.log('Validation:', e.detail.isValid ? 'Valid' : 'Invalid', e.detail.errors);
+    });
+
+    // Theme change from selector
+    themeSelector.addEventListener('theme-change', (e) => {
+      editor.theme = e.detail.theme;
+      applyPageTheme(e.detail.theme);
+    });
+
+    // Theme change from editor (if set programmatically)
+    editor.addEventListener('theme-change', (e) => {
+      themeSelector.theme = e.detail.theme;
+      applyPageTheme(e.detail.theme);
     });
 
     // ═══════════════════════════════════════════════════════════════
@@ -389,6 +440,8 @@
     console.log('  editor.setState(schema, data) - Set both at once');
     console.log('  editor.validate()    - Re-validate and get result');
     console.log('  editor.debugGrid     - Toggle debug grid overlay');
+    console.log('  editor.theme         - Get/set theme ("dark" or "light")');
+    console.log('  editor.getAvailableThemes() - Get list of themes');
   </script>
 </body>
 </html>

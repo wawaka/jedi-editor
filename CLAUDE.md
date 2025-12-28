@@ -23,18 +23,28 @@ npm run dev    # Dev server with live reload (http://localhost:17080)
 ## Architecture
 
 ### Component Structure
-- `src/jedi-editor.js` - Main component, manages state and validation
+- `src/jedi-editor.js` - Main component, manages state, validation, and themes
 - `src/schema-pane/` - Schema editing (visual + raw modes)
 - `src/data-pane/` - Data editing (visual + raw modes)
-- `src/shared/` - Reusable components (value-block, type-badge, etc.)
+- `src/shared/` - Reusable components (value-block, type-badge, theme-selector, etc.)
 - `src/services/validation-service.js` - AJV wrapper
-- `src/styles/shared-styles.js` - CSS theme
+- `src/services/theme-service.js` - Theme state management
+- `src/styles/themes.js` - Theme color definitions (dark, light)
+- `src/styles/shared-styles.js` - CSS theme variables and shared styles
 
 ### Data Flow
 1. JediEditor receives schema/data via properties or setState()
 2. Child panes dispatch change events
 3. JediEditor validates via validationService
-4. JediEditor emits schema-change, data-change, validation-change events
+4. JediEditor emits schema-change, data-change, validation-change, theme-change events
+
+### Theming
+- Two built-in themes: `dark` (default) and `light`
+- Theme colors defined in `src/styles/themes.js`
+- Use `editor.theme = 'light'` or `editor.theme = 'dark'` to switch
+- Theme persisted to localStorage automatically
+- `<jedi-theme-selector>` component provides UI toggle
+- All colors use CSS custom properties (`--jedi-*`)
 
 ## Code Conventions
 

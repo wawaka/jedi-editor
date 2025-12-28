@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
-import { themeStyles } from './styles/shared-styles.js';
+import { themeStyles, themeVarsStyles } from './styles/shared-styles.js';
 import { validationService } from './services/validation-service.js';
+import { themeService } from './services/theme-service.js';
 import { DEFAULT_SCHEMA, DEFAULT_DATA } from './shared/constants.js';
 import './schema-pane/jedi-schema-pane.js';
 import './data-pane/jedi-data-pane.js';
@@ -12,9 +13,11 @@ import './data-pane/jedi-data-pane.js';
  * @element jedi-editor
  * @property {Object} initialSchema - Initial schema (optional, uses default if not provided)
  * @property {*} initialData - Initial data (optional, uses default if not provided)
+ * @property {string} theme - Current theme name ('dark' | 'light')
  * @fires schema-change - When schema changes, detail: { schema }
  * @fires data-change - When data changes, detail: { data }
  * @fires validation-change - When validation state changes, detail: { isValid, errors }
+ * @fires theme-change - When theme changes, detail: { theme }
  */
 export class JediEditor extends LitElement {
   static properties = {
@@ -24,10 +27,12 @@ export class JediEditor extends LitElement {
     _data: { type: Object, state: true },
     _isValid: { type: Boolean, state: true },
     _errors: { type: Array, state: true },
-    _debugGrid: { type: Boolean, state: true }
+    _debugGrid: { type: Boolean, state: true },
+    _theme: { type: String, state: true }
   };
 
   static styles = [
+    themeVarsStyles,
     themeStyles,
     css`
       :host {
@@ -70,13 +75,22 @@ export class JediEditor extends LitElement {
     this._errors = [];
     this._debugGrid = false;
     this._ready = false;
+    this._theme = null;
   }
 
   async connectedCallback() {
     super.connectedCallback();
 
+    // Initialize services
+    themeService.init();
     await validationService.init();
     this._ready = true;
+
+    // Initialize theme
+    if (this._theme === null) {
+      this._theme = themeService.getTheme();
+    }
+    this._applyTheme(this._theme);
 
     if (this._schema === null) {
       this._schema = this.initialSchema || DEFAULT_SCHEMA;
@@ -227,6 +241,34 @@ export class JediEditor extends LitElement {
 
   get debugGrid() {
     return this._debugGrid;
+  }
+
+  // Theme API
+  get theme() {
+    return this._theme;
+  }
+
+  set theme(value) {
+    const oldTheme = this._theme;
+    if (value === oldTheme) return;
+
+    this._theme = value;
+    themeService.setTheme(value);
+    this._applyTheme(value);
+
+    this.dispatchEvent(new CustomEvent('theme-change', {
+      detail: { theme: value },
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  getAvailableThemes() {
+    return themeService.getAvailableThemes();
+  }
+
+  _applyTheme(themeName) {
+    themeService.applyThemeToElement(this, themeName);
   }
 }
 
