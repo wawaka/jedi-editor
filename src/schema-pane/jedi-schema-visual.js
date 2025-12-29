@@ -14,8 +14,7 @@ import '../shared/jedi-required-button.js';
 export class JediSchemaVisual extends LitElement {
   static properties = {
     schema: { type: Object },
-    debugGrid: { type: Boolean, attribute: 'debug-grid' },
-    _enumEditingPaths: { type: Object, state: true }
+    debugGrid: { type: Boolean, attribute: 'debug-grid' }
   };
 
   static styles = [
@@ -269,7 +268,6 @@ export class JediSchemaVisual extends LitElement {
     this.schema = { type: 'object', properties: {} };
     this.debugGrid = false;
     this._expandedPaths = new Set(['']);
-    this._enumEditingPaths = new Set();
     this._typeMenuState = { open: false, path: null, top: 0, left: 0 };
     this._editingName = null;
     this._editingEnum = { path: null, index: null, value: '' };
@@ -292,23 +290,20 @@ export class JediSchemaVisual extends LitElement {
       <jedi-value-block
         type="${type}"
         ?expanded="${isExpanded}"
-        ?clickable="${hasChildren}"
+        ?clickable="${hasChildren || isExpanded}"
         .enumValues="${hasEnum ? this.schema.enum : null}"
-        ?enum-editing="${this._enumEditingPaths.has('')}"
         ?show-add-button="${type === 'object'}"
         add-button-title="Add property"
         .count="${type === 'object' ? Object.keys(this.schema?.properties || {}).length : null}"
         ?show-items-label="${type === 'array'}"
         @toggle-expand="${() => this._toggleExpand('')}"
         @type-click="${(e) => this._openTypeMenu(e.detail.event, [])}"
-        @enum-click="${(e) => this._toggleEnumEditing(e.detail.event, '')}"
+        @enum-click="${() => this._toggleExpand('')}"
         @add-click="${(e) => this._handleAddProperty(e.detail.event, [])}"
       >
         <div slot="content">
-          ${this._renderChildren(this.schema, [], type)}
-        </div>
-        <div slot="enum-editor">
-          ${this._renderEnumEditor(this.schema, [])}
+          ${hasChildren ? this._renderChildren(this.schema, [], type) : ''}
+          ${hasEnum ? this._renderEnumEditor(this.schema, []) : ''}
         </div>
       </jedi-value-block>
     `;
@@ -362,9 +357,8 @@ export class JediSchemaVisual extends LitElement {
         <jedi-value-block
           type="${type}"
           ?expanded="${isExpanded}"
-          ?clickable="${hasChildren}"
+          ?clickable="${hasChildren || isExpanded}"
           .enumValues="${hasEnum ? node.enum : null}"
-          ?enum-editing="${this._enumEditingPaths.has(pathKey)}"
           ?show-ghost-enum="${!hasEnum && !hasChildren}"
           ?show-add-button="${type === 'object'}"
           add-button-title="Add property"
@@ -372,15 +366,13 @@ export class JediSchemaVisual extends LitElement {
           ?show-items-label="${type === 'array'}"
           @toggle-expand="${() => this._toggleExpand(pathKey)}"
           @type-click="${(e) => this._openTypeMenu(e.detail.event, path)}"
-          @enum-click="${(e) => this._toggleEnumEditing(e.detail.event, pathKey)}"
+          @enum-click="${() => this._toggleExpand(pathKey)}"
           @ghost-enum-click="${() => this._addEnum(path)}"
           @add-click="${(e) => this._handleAddProperty(e.detail.event, path)}"
         >
           <div slot="content">
-            ${this._renderChildren(node, path, type)}
-          </div>
-          <div slot="enum-editor">
-            ${this._renderEnumEditor(node, path)}
+            ${hasChildren ? this._renderChildren(node, path, type) : ''}
+            ${hasEnum ? this._renderEnumEditor(node, path) : ''}
           </div>
         </jedi-value-block>
       </div>
@@ -440,9 +432,8 @@ export class JediSchemaVisual extends LitElement {
         <jedi-value-block
           type="${itemType}"
           ?expanded="${itemIsExpanded}"
-          ?clickable="${itemHasChildren}"
+          ?clickable="${itemHasChildren || itemIsExpanded}"
           .enumValues="${itemHasEnum ? items.enum : null}"
-          ?enum-editing="${this._enumEditingPaths.has(itemsPathKey)}"
           ?show-ghost-enum="${!itemHasEnum && !itemHasChildren}"
           ?show-add-button="${itemType === 'object'}"
           add-button-title="Add property"
@@ -450,15 +441,13 @@ export class JediSchemaVisual extends LitElement {
           ?show-items-label="${itemType === 'array'}"
           @toggle-expand="${() => this._toggleExpand(itemsPathKey)}"
           @type-click="${(e) => this._openTypeMenu(e.detail.event, itemsPath)}"
-          @enum-click="${(e) => this._toggleEnumEditing(e.detail.event, itemsPathKey)}"
+          @enum-click="${() => this._toggleExpand(itemsPathKey)}"
           @ghost-enum-click="${() => this._addEnum(itemsPath)}"
           @add-click="${(e) => this._handleAddProperty(e.detail.event, itemsPath)}"
         >
           <div slot="content">
-            ${this._renderChildren(items, itemsPath, itemType)}
-          </div>
-          <div slot="enum-editor">
-            ${this._renderEnumEditor(items, itemsPath)}
+            ${itemHasChildren ? this._renderChildren(items, itemsPath, itemType) : ''}
+            ${itemHasEnum ? this._renderEnumEditor(items, itemsPath) : ''}
           </div>
         </jedi-value-block>
       `;
@@ -559,17 +548,6 @@ export class JediSchemaVisual extends LitElement {
       this._expandedPaths.add(pathKey);
     }
     this.requestUpdate();
-  }
-
-  _toggleEnumEditing(e, pathKey) {
-    e.stopPropagation();
-    const newSet = new Set(this._enumEditingPaths);
-    if (newSet.has(pathKey)) {
-      newSet.delete(pathKey);
-    } else {
-      newSet.add(pathKey);
-    }
-    this._enumEditingPaths = newSet;
   }
 
   _openTypeMenu(e, path) {
@@ -697,9 +675,7 @@ export class JediSchemaVisual extends LitElement {
 
   _removeEnum(path) {
     const pathKey = path.join('.');
-    const newSet = new Set(this._enumEditingPaths);
-    newSet.delete(pathKey);
-    this._enumEditingPaths = newSet;
+    this._expandedPaths.delete(pathKey);
 
     const newSchema = this._updateAtPath(this.schema, path, node => {
       const { enum: _, ...rest } = node;

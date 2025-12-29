@@ -19,7 +19,6 @@ import './jedi-enum-badge.js';
  * @property {number} count - If set, shows count display
  * @property {string} countFormat - 'object' for {n}, 'array' for [n]
  * @property {Array} enumValues - If set, shows enum badge with these values
- * @property {boolean} enumEditing - Whether enum editor is open
  * @property {boolean} showGhostEnum - Show ghost "enum" button
  * @property {boolean} showItemsLabel - Show "items" label
  * @property {string} ghostHint - Hint text for ghost blocks
@@ -32,8 +31,7 @@ import './jedi-enum-badge.js';
  * @fires ghost-click - Ghost block clicked
  *
  * @slot - Additional header content
- * @slot content - Nested content area
- * @slot enum-editor - Enum editor content
+ * @slot content - Nested content area (children or enum editor)
  */
 export class JediValueBlock extends LitElement {
   static properties = {
@@ -52,7 +50,6 @@ export class JediValueBlock extends LitElement {
     countFormat: { type: String, attribute: 'count-format' },
     // Enum badge
     enumValues: { type: Array, attribute: 'enum-values' },
-    enumEditing: { type: Boolean, attribute: 'enum-editing' },
     showGhostEnum: { type: Boolean, attribute: 'show-ghost-enum' },
     // Labels
     showItemsLabel: { type: Boolean, attribute: 'show-items-label' },
@@ -168,7 +165,6 @@ export class JediValueBlock extends LitElement {
     this.countFormat = 'object';
     // Enum badge
     this.enumValues = null;
-    this.enumEditing = false;
     this.showGhostEnum = false;
     // Labels
     this.showItemsLabel = false;
@@ -217,7 +213,6 @@ export class JediValueBlock extends LitElement {
             <slot name="content"></slot>
           </div>
         ` : ''}
-        ${this.enumEditing ? html`<slot name="enum-editor"></slot>` : ''}
       </div>
     `;
   }
