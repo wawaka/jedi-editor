@@ -43,7 +43,7 @@ export class JediDataVisual extends LitElement {
       .property-grid {
         display: grid;
         grid-template-columns: auto 1fr;
-        align-items: center;
+        align-items: start;
       }
 
       .property-name {
