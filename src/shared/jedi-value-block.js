@@ -140,12 +140,12 @@ export class JediValueBlock extends LitElement {
         border-color: var(--jedi-info);
       }
 
-      :host([ghost]) .ghost-content {
+      :host([ghost]) .block-header {
         opacity: 0.4;
         transition: opacity 0.15s ease;
       }
 
-      :host([ghost]) .block:hover .ghost-content {
+      :host([ghost]) .block:hover .block-header {
         opacity: 0.7;
       }
     `
@@ -186,11 +186,9 @@ export class JediValueBlock extends LitElement {
           @click="${this._handleGhostClick}"
         >
           <div class="block-header">
-            <div class="ghost-content">
-              <jedi-type-badge type="${this.type}"></jedi-type-badge>
-              ${this.ghostHint ? html`<span class="ghost-hint">${this.ghostHint}</span>` : ''}
-              <slot></slot>
-            </div>
+            <jedi-type-badge type="${this.type}"></jedi-type-badge>
+            ${this.ghostHint ? html`<span class="ghost-hint">${this.ghostHint}</span>` : ''}
+            <slot></slot>
           </div>
         </div>
       `;
