@@ -4,6 +4,7 @@ import { LAYOUT, SCHEMA_TYPES } from '../shared/constants.js';
 import '../shared/jedi-value-block.js';
 import '../shared/jedi-delete-button.js';
 import '../shared/jedi-inline-edit.js';
+import '../shared/jedi-inline-value.js';
 
 const DATA_TYPES = [...SCHEMA_TYPES, 'null'];
 
@@ -23,7 +24,6 @@ export class JediDataVisual extends LitElement {
     debugGrid: { type: Boolean, attribute: 'debug-grid' },
     _expandedPaths: { type: Object, state: true },
     _editingPath: { type: String, state: true },
-    _editValue: { type: String, state: true },
     _renamingPath: { type: String, state: true },
     _typeMenuState: { type: Object, state: true }
   };
@@ -136,42 +136,6 @@ export class JediDataVisual extends LitElement {
         font-size: 0.75rem;
         color: var(--jedi-text-muted);
         font-style: italic;
-      }
-
-      /* Value editing */
-      .value-display {
-        font-size: 0.75rem;
-        font-family: var(--jedi-font-mono);
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        transition: opacity 0.15s ease;
-        text-overflow: ellipsis;
-        overflow: hidden;
-      }
-
-      .value-display:hover {
-        opacity: 0.8;
-      }
-
-      .value-display.string {
-        color: var(--jedi-string);
-      }
-
-      .value-display.number {
-        color: var(--jedi-number);
-      }
-
-      .value-display.null {
-        color: var(--jedi-text-muted);
-      }
-
-      .value-input {
-        flex: 1;
-        min-width: 0;
-        padding: 0.125rem 0.5rem;
-        font-size: 0.75rem;
       }
 
       /* Boolean toggle */
@@ -306,7 +270,6 @@ export class JediDataVisual extends LitElement {
     this.debugGrid = false;
     this._expandedPaths = new Set(['']);
     this._editingPath = null;
-    this._editValue = '';
     this._renamingPath = null;
     this._typeMenuState = { open: false, path: null, top: 0, left: 0 };
   }
@@ -534,27 +497,15 @@ export class JediDataVisual extends LitElement {
     }
 
     // Regular editing
-    if (this._editingPath === pathStr) {
-      return html`
-        <input
-          type="text"
-          class="input value-input"
-          .value="${this._editValue}"
-          @input="${e => this._editValue = e.target.value}"
-          @blur="${() => this._finishEdit(path, valueType)}"
-          @keydown="${e => this._handleEditKeyDown(e, path, valueType)}"
-          autofocus
-        />
-      `;
-    }
-
-    const displayValue = this._formatDisplayValue(value, valueType);
     return html`
-      <button
-        class="value-display ${valueType}"
-        @click="${() => this._startEdit(pathStr, value, valueType)}"
-        title="Click to edit"
-      >${displayValue}</button>
+      <jedi-inline-value
+        .value="${value}"
+        type="${valueType}"
+        ?editing="${this._editingPath === pathStr}"
+        @edit-start="${() => this._startEdit(pathStr)}"
+        @edit-complete="${(e) => this._handleEditComplete(path, e.detail.value)}"
+        @edit-cancel="${() => { this._editingPath = null; }}"
+      ></jedi-inline-value>
     `;
   }
 
@@ -610,12 +561,6 @@ export class JediDataVisual extends LitElement {
     }
   }
 
-  _formatDisplayValue(value, type) {
-    if (type === 'string') return `"${value}"`;
-    if (type === 'null') return 'null';
-    return String(value);
-  }
-
   // Expand/collapse
   _toggleExpand(pathStr) {
     const newSet = new Set(this._expandedPaths);
@@ -628,42 +573,13 @@ export class JediDataVisual extends LitElement {
   }
 
   // Edit value
-  _startEdit(pathStr, value, valueType) {
+  _startEdit(pathStr) {
     this._editingPath = pathStr;
-    this._editValue = valueType === 'string' ? String(value) : JSON.stringify(value);
   }
 
-  _finishEdit(path, valueType) {
-    if (this._editingPath === null) return;
-
-    let newValue;
-    try {
-      if (valueType === 'string') {
-        newValue = this._editValue;
-      } else if (valueType === 'number' || valueType === 'integer') {
-        newValue = Number(this._editValue);
-        if (isNaN(newValue)) {
-          this._editingPath = null;
-          return;
-        }
-      } else if (valueType === 'null') {
-        newValue = null;
-      } else {
-        newValue = JSON.parse(this._editValue);
-      }
-      this._updateAtPath(path, newValue);
-    } catch {
-      // Invalid input
-    }
+  _handleEditComplete(path, newValue) {
     this._editingPath = null;
-  }
-
-  _handleEditKeyDown(e, path, valueType) {
-    if (e.key === 'Enter') {
-      this._finishEdit(path, valueType);
-    } else if (e.key === 'Escape') {
-      this._editingPath = null;
-    }
+    this._updateAtPath(path, newValue);
   }
 
   // Rename property

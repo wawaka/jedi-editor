@@ -45,6 +45,7 @@ export { JediTypeBadge } from './shared/jedi-type-badge.js';
 export { JediValueBlock } from './shared/jedi-value-block.js';
 export { JediThemeSelector } from './shared/jedi-theme-selector.js';
 export { JediInlineEdit } from './shared/jedi-inline-edit.js';
+export { JediInlineValue } from './shared/jedi-inline-value.js';
 
 // Services
 export { validationService } from './services/validation-service.js';
