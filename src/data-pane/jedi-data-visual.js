@@ -3,6 +3,7 @@ import { themeStyles, buttonStyles, inputStyles, scrollbarStyles } from '../styl
 import { LAYOUT, SCHEMA_TYPES } from '../shared/constants.js';
 import '../shared/jedi-value-block.js';
 import '../shared/jedi-delete-button.js';
+import '../shared/jedi-inline-edit.js';
 
 const DATA_TYPES = [...SCHEMA_TYPES, 'null'];
 
@@ -24,7 +25,6 @@ export class JediDataVisual extends LitElement {
     _editingPath: { type: String, state: true },
     _editValue: { type: String, state: true },
     _renamingPath: { type: String, state: true },
-    _renameValue: { type: String, state: true },
     _typeMenuState: { type: Object, state: true }
   };
 
@@ -70,32 +70,6 @@ export class JediDataVisual extends LitElement {
       }
       :host([debug-grid]) .property-value {
         border: 1px solid rgba(0, 0, 255, 0.3);
-      }
-
-      .name-btn {
-        font-size: 0.875rem;
-        font-family: var(--jedi-font-mono);
-        font-weight: 500;
-        color: var(--jedi-text);
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        transition: color 0.15s ease;
-        text-align: left;
-      }
-
-      .name-btn:hover {
-        color: var(--jedi-info);
-      }
-
-      .name-btn.not-in-schema {
-        border-bottom: 1px solid var(--jedi-text-dim);
-      }
-
-      .name-btn.has-error {
-        text-decoration: underline wavy var(--jedi-error);
-        text-underline-offset: 2px;
       }
 
       .array-index.has-error {
@@ -198,12 +172,6 @@ export class JediDataVisual extends LitElement {
         min-width: 0;
         padding: 0.125rem 0.5rem;
         font-size: 0.75rem;
-      }
-
-      .name-input {
-        width: 8rem;
-        padding: 0.125rem 0.5rem;
-        font-size: 0.875rem;
       }
 
       /* Boolean toggle */
@@ -340,7 +308,6 @@ export class JediDataVisual extends LitElement {
     this._editingPath = null;
     this._editValue = '';
     this._renamingPath = null;
-    this._renameValue = '';
     this._typeMenuState = { open: false, path: null, top: 0, left: 0 };
   }
 
@@ -436,22 +403,16 @@ export class JediDataVisual extends LitElement {
     // Name element
     const nameElement = isArrayItem ? html`
       <span class="array-index ${hasError ? 'has-error' : ''}">[${name}]</span>
-    ` : this._renamingPath === pathStr ? html`
-      <input
-        type="text"
-        class="input name-input"
-        .value="${this._renameValue}"
-        @input="${e => this._renameValue = e.target.value}"
-        @blur="${() => this._finishRename(path)}"
-        @keydown="${e => this._handleRenameKeyDown(e, path)}"
-        autofocus
-      />
     ` : html`
-      <button
-        class="name-btn ${schemaNode ? '' : 'not-in-schema'} ${hasError ? 'has-error' : ''}"
-        @click="${() => this._startRename(pathStr, name)}"
-        title="${schemaNode ? 'Click to rename' : 'Not in schema - click to rename'}"
-      >${name}</button>
+      <jedi-inline-edit
+        .value="${name}"
+        ?editing="${this._renamingPath === pathStr}"
+        ?muted="${!schemaNode}"
+        ?error="${hasError}"
+        @edit-start="${() => this._startRename(pathStr)}"
+        @edit-complete="${(e) => this._handleRenameComplete(path, e.detail.value)}"
+        @edit-cancel="${() => { this._renamingPath = null; }}"
+      ></jedi-inline-edit>
     `;
 
     // Value element
@@ -706,29 +667,16 @@ export class JediDataVisual extends LitElement {
   }
 
   // Rename property
-  _startRename(pathStr, name) {
+  _startRename(pathStr) {
     this._renamingPath = pathStr;
-    this._renameValue = name;
   }
 
-  _finishRename(path) {
-    if (this._renamingPath === null) return;
-
-    const oldName = path[path.length - 1];
-    const newName = this._renameValue.trim();
-
-    if (newName && newName !== oldName) {
-      this._renameAtPath(path, newName);
-    }
+  _handleRenameComplete(path, newName) {
     this._renamingPath = null;
-  }
-
-  _handleRenameKeyDown(e, path) {
-    if (e.key === 'Enter') {
-      this._finishRename(path);
-    } else if (e.key === 'Escape') {
-      this._renamingPath = null;
-    }
+    newName = newName.trim();
+    const oldName = path[path.length - 1];
+    if (!newName || newName === oldName) return;
+    this._renameAtPath(path, newName);
   }
 
   // Delete

@@ -4,6 +4,7 @@ import { SCHEMA_TYPES, LAYOUT } from '../shared/constants.js';
 import '../shared/jedi-value-block.js';
 import '../shared/jedi-delete-button.js';
 import '../shared/jedi-required-button.js';
+import '../shared/jedi-inline-edit.js';
 
 /**
  * Visual schema editor with recursive property/items editing
@@ -14,7 +15,8 @@ import '../shared/jedi-required-button.js';
 export class JediSchemaVisual extends LitElement {
   static properties = {
     schema: { type: Object },
-    debugGrid: { type: Boolean, attribute: 'debug-grid' }
+    debugGrid: { type: Boolean, attribute: 'debug-grid' },
+    _editingName: { type: String, state: true }
   };
 
   static styles = [
@@ -63,33 +65,6 @@ export class JediSchemaVisual extends LitElement {
         position: relative;
         display: flex;
         align-items: center;
-      }
-
-      .name-btn {
-        font-size: 0.875rem;
-        font-family: var(--jedi-font-mono);
-        font-weight: 500;
-        color: var(--jedi-text);
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        transition: color 0.15s ease;
-        text-align: left;
-      }
-
-      .name-btn:hover {
-        color: var(--jedi-info);
-      }
-
-      .name-btn.required {
-        border-bottom: 1px solid var(--jedi-error);
-      }
-
-      .name-input {
-        width: 8rem;
-        padding: 0.125rem 0.5rem;
-        font-size: 0.875rem;
       }
 
       .hover-actions {
@@ -331,26 +306,14 @@ export class JediSchemaVisual extends LitElement {
               title="Delete property"
             ></jedi-delete-button>
           </div>
-          ${isEditing ? html`
-            <input
-              type="text"
-              class="input name-input"
-              .value="${name}"
-              @blur="${(e) => this._finishRename(parentPath, name, e.target.value)}"
-              @keydown="${(e) => {
-                if (e.key === 'Enter') this._finishRename(parentPath, name, e.target.value);
-                if (e.key === 'Escape') { this._editingName = null; this.requestUpdate(); }
-              }}"
-              @click="${e => e.stopPropagation()}"
-              autofocus
-            />
-          ` : html`
-            <button
-              class="name-btn ${isRequired ? 'required' : ''}"
-              @click="${() => this._startRename(pathKey)}"
-              title="Click to rename"
-            >${name}</button>
-          `}
+          <jedi-inline-edit
+            .value="${name}"
+            ?editing="${isEditing}"
+            ?required="${isRequired}"
+            @edit-start="${() => this._startRename(pathKey)}"
+            @edit-complete="${(e) => this._handleRenameComplete(parentPath, name, e.detail.value)}"
+            @edit-cancel="${() => { this._editingName = null; }}"
+          ></jedi-inline-edit>
         </div>
       </div>
       <div class="property-value">
@@ -636,15 +599,12 @@ export class JediSchemaVisual extends LitElement {
 
   _startRename(pathKey) {
     this._editingName = pathKey;
-    this.requestUpdate();
   }
 
-  _finishRename(parentPath, oldName, newName) {
+  _handleRenameComplete(parentPath, oldName, newName) {
     this._editingName = null;
-    if (!newName || newName === oldName) {
-      this.requestUpdate();
-      return;
-    }
+    newName = newName.trim();
+    if (!newName || newName === oldName) return;
 
     const newSchema = this._updateAtPath(this.schema, parentPath, node => {
       const { [oldName]: propValue, ...rest } = node.properties || {};
