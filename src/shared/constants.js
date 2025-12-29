@@ -2,19 +2,14 @@
  * Shared constants for JsonEditor Lit components
  */
 
+import { TYPE_COLOR_SCHEMES, DEFAULT_TYPE_SCHEME } from '../styles/themes.js';
+
 // Type colors for visual distinction (CSS values)
+// Uses the configured default type color scheme
 // badge: background color for type badge
 // text: text color for type badge
 // border: border/frame color for blocks
-export const TYPE_COLORS = {
-  string:  { badge: '#047857', text: '#d1fae5', border: 'rgba(4, 120, 87, 0.5)' },
-  number:  { badge: '#7e22ce', text: '#f3e8ff', border: 'rgba(126, 34, 206, 0.5)' },
-  integer: { badge: '#7e22ce', text: '#f3e8ff', border: 'rgba(126, 34, 206, 0.5)' },
-  boolean: { badge: '#b45309', text: '#fef3c7', border: 'rgba(180, 83, 9, 0.5)' },
-  object:  { badge: '#1d4ed8', text: '#dbeafe', border: 'rgba(29, 78, 216, 0.5)' },
-  array:   { badge: '#0891b2', text: '#cffafe', border: 'rgba(8, 145, 178, 0.5)' },
-  null:    { badge: '#4b5563', text: '#f3f4f6', border: 'rgba(75, 85, 99, 0.5)' },
-};
+export const TYPE_COLORS = TYPE_COLOR_SCHEMES[DEFAULT_TYPE_SCHEME];
 
 // Available schema types
 export const SCHEMA_TYPES = ['string', 'number', 'integer', 'boolean', 'object', 'array'];
