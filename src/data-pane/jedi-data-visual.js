@@ -2,6 +2,7 @@ import { LitElement, html, css, unsafeCSS } from 'lit';
 import { themeStyles, buttonStyles, inputStyles, scrollbarStyles } from '../styles/shared-styles.js';
 import { LAYOUT, SCHEMA_TYPES } from '../shared/constants.js';
 import '../shared/jedi-value-block.js';
+import '../shared/jedi-delete-button.js';
 
 const DATA_TYPES = [...SCHEMA_TYPES, 'null'];
 
@@ -155,28 +156,6 @@ export class JediDataVisual extends LitElement {
       .hover-actions:hover {
         opacity: 1;
         pointer-events: auto;
-      }
-
-      .delete-btn {
-        position: relative;
-        z-index: 1;
-        width: 0.875rem;
-        height: 0.875rem;
-        border-radius: 2px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.5rem;
-        background: var(--jedi-bg-input);
-        color: var(--jedi-text-muted);
-        border: none;
-        cursor: pointer;
-        transition: all 0.15s ease;
-      }
-
-      .delete-btn:hover {
-        background: rgba(255, 68, 68, 0.3);
-        color: var(--jedi-error);
       }
 
       .empty-message {
@@ -482,11 +461,10 @@ export class JediDataVisual extends LitElement {
       <div class="property-name">
         <div class="name-group">
           <div class="hover-actions">
-            <button
-              class="delete-btn"
+            <jedi-delete-button
               @click="${e => this._handleDelete(e, path, name, isArrayItem)}"
               title="${isArrayItem ? 'Delete item' : 'Delete property'}"
-            >x</button>
+            ></jedi-delete-button>
           </div>
           ${nameElement}
         </div>

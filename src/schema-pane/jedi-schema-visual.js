@@ -2,6 +2,8 @@ import { LitElement, html, css, unsafeCSS } from 'lit';
 import { themeStyles, inputStyles } from '../styles/shared-styles.js';
 import { SCHEMA_TYPES, LAYOUT } from '../shared/constants.js';
 import '../shared/jedi-value-block.js';
+import '../shared/jedi-delete-button.js';
+import '../shared/jedi-required-button.js';
 
 /**
  * Visual schema editor with recursive property/items editing
@@ -122,49 +124,6 @@ export class JediSchemaVisual extends LitElement {
         pointer-events: auto;
       }
 
-      .action-btn {
-        position: relative;
-        z-index: 1;
-        width: 0.875rem;
-        height: 0.875rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 2px;
-        font-size: 0.5rem;
-        background: var(--jedi-bg-input);
-        border: none;
-        cursor: pointer;
-        transition: all 0.15s;
-      }
-
-      .action-btn.required {
-        color: var(--jedi-text-dim);
-      }
-
-      .action-btn.required.active {
-        color: var(--jedi-warning);
-        background: rgba(255, 166, 77, 0.3);
-      }
-
-      .action-btn.required:hover {
-        color: var(--jedi-warning);
-        background: rgba(255, 166, 77, 0.2);
-      }
-
-      .action-btn.required.active:hover {
-        background: rgba(255, 166, 77, 0.4);
-      }
-
-      .action-btn.delete {
-        color: var(--jedi-text-dim);
-      }
-
-      .action-btn.delete:hover {
-        color: var(--jedi-error);
-        background: rgba(255, 68, 68, 0.2);
-      }
-
       .type-menu {
         position: fixed;
         background: var(--jedi-bg-input);
@@ -272,26 +231,13 @@ export class JediSchemaVisual extends LitElement {
       .enum-value-row .value-btn.number { color: var(--jedi-number); }
       .enum-value-row .value-btn.boolean { color: var(--jedi-boolean); }
 
-      .enum-value-row .delete-btn {
-        width: 1rem;
-        height: 1rem;
-        font-size: 0.625rem;
-        background: var(--jedi-bg-input);
-        border: none;
-        border-radius: 2px;
-        color: var(--jedi-text-dim);
-        cursor: pointer;
+      .enum-value-row jedi-delete-button {
         opacity: 0;
-        transition: all 0.15s;
+        transition: opacity 0.15s;
       }
 
-      .enum-value-row:hover .delete-btn {
+      .enum-value-row:hover jedi-delete-button {
         opacity: 1;
-      }
-
-      .enum-value-row .delete-btn:hover {
-        background: rgba(255, 68, 68, 0.2);
-        color: var(--jedi-error);
       }
 
       .add-enum-value {
@@ -380,16 +326,15 @@ export class JediSchemaVisual extends LitElement {
       <div class="property-name">
         <div class="name-group">
           <div class="hover-actions">
-            <button
-              class="action-btn required ${isRequired ? 'active' : ''}"
+            <jedi-required-button
+              ?active="${isRequired}"
               @click="${() => this._toggleRequired(parentPath, name)}"
               title="${isRequired ? 'Required - click to make optional' : 'Optional - click to make required'}"
-            >*</button>
-            <button
-              class="action-btn delete"
+            ></jedi-required-button>
+            <jedi-delete-button
               @click="${() => this._deleteProperty(parentPath, name)}"
               title="Delete property"
-            >x</button>
+            ></jedi-delete-button>
           </div>
           ${isEditing ? html`
             <input
@@ -578,10 +523,10 @@ export class JediSchemaVisual extends LitElement {
           class="value-btn ${valueType}"
           @click="${() => this._startEditEnumValue(path, index, value)}"
         >${display}</button>
-        <button
-          class="delete-btn"
+        <jedi-delete-button
           @click="${() => this._deleteEnumValue(path, index)}"
-        >x</button>
+          title="Delete value"
+        ></jedi-delete-button>
       </div>
     `;
   }
