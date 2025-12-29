@@ -87,7 +87,7 @@ export class JediValueBlock extends LitElement {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.25rem 0.5rem;
+        padding: 0.25rem;
         min-height: ${unsafeCSS(LAYOUT.blockRowHeight)};
         box-sizing: border-box;
       }
