@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { themeStyles, buttonStyles, scrollbarStyles } from '../styles/shared-styles.js';
+import { themeStyles, buttonStyles, scrollbarStyles, paneHeaderStyles } from '../styles/shared-styles.js';
 import './jedi-schema-visual.js';
 import '../shared/jedi-raw-editor.js';
 import '../shared/jedi-editor-toggle.js';
@@ -23,6 +23,7 @@ export class JediSchemaPane extends LitElement {
     themeStyles,
     buttonStyles,
     scrollbarStyles,
+    paneHeaderStyles,
     css`
       :host {
         display: flex;
@@ -30,28 +31,6 @@ export class JediSchemaPane extends LitElement {
         flex: 1;
         min-height: 0;
         overflow: hidden;
-      }
-
-      .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: var(--jedi-bg-primary);
-        border-bottom: 1px solid var(--jedi-border);
-        padding: 0.5rem 0.75rem;
-        flex-shrink: 0;
-      }
-
-      .header-left {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .title {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--jedi-text);
       }
 
       .error-bar {
@@ -97,10 +76,15 @@ export class JediSchemaPane extends LitElement {
         <div class="header-left">
           <span class="title">Schema</span>
         </div>
-        <jedi-editor-toggle
-          mode="${this._mode}"
-          @mode-change="${this._handleModeChange}"
-        ></jedi-editor-toggle>
+        <div class="header-controls">
+          <slot name="header-controls"></slot>
+        </div>
+        <div class="header-right">
+          <jedi-editor-toggle
+            mode="${this._mode}"
+            @mode-change="${this._handleModeChange}"
+          ></jedi-editor-toggle>
+        </div>
       </div>
 
       ${this._parseError ? html`

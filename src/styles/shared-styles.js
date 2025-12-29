@@ -130,6 +130,45 @@ export const inputStyles = css`
 `;
 
 /**
+ * Pane header styles (shared by schema-pane and data-pane)
+ */
+export const paneHeaderStyles = css`
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--jedi-bg-primary);
+    border-bottom: 1px solid var(--jedi-border);
+    padding: 0.5rem 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .header-controls {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--jedi-text);
+  }
+`;
+
+/**
  * Scrollbar styles
  */
 export const scrollbarStyles = css`

@@ -46,6 +46,30 @@ npm run dev    # Dev server with live reload (http://localhost:17080)
 - `<jedi-theme-selector>` component provides UI toggle
 - All colors use CSS custom properties (`--jedi-*`)
 
+### Custom Header Controls (Slots)
+Inject custom controls into pane headers using named slots:
+- `schema-header-controls` - Controls appear in schema pane header
+- `data-header-controls` - Controls appear in data pane header
+
+```html
+<jedi-editor>
+  <div slot="schema-header-controls">
+    <select><option>Option</option></select>
+    <span class="divider"></span>
+    <button>Action</button>
+  </div>
+  <div slot="data-header-controls">
+    <button>Action</button>
+  </div>
+</jedi-editor>
+```
+
+- Controls positioned between the title and visual/raw toggle, right-aligned
+- Supported elements: `<button>`, `<select>`, `.divider`
+- Styling applied via `_applyHeaderControlStyles()` in jedi-editor.js
+- Slot forwarding: jedi-editor catches slots and clones content into child panes' light DOM
+- Pane header layout defined in `paneHeaderStyles` (shared-styles.js)
+
 ## Code Conventions
 
 - Lit components with `jedi-` prefix

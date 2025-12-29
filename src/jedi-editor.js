@@ -62,6 +62,11 @@ export class JediEditor extends LitElement {
       .pane:first-child {
         border-right: 1px solid var(--jedi-border);
       }
+
+      slot[name="schema-header-controls"],
+      slot[name="data-header-controls"] {
+        display: none;
+      }
     `
   ];
 
@@ -106,6 +111,8 @@ export class JediEditor extends LitElement {
 
   render() {
     return html`
+      <slot name="schema-header-controls" @slotchange="${this._handleSchemaSlotChange}"></slot>
+      <slot name="data-header-controls" @slotchange="${this._handleDataSlotChange}"></slot>
       <div class="panes">
         <div class="pane">
           <jedi-schema-pane
@@ -126,6 +133,110 @@ export class JediEditor extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  _handleSchemaSlotChange(e) {
+    const slot = e.target;
+    const schemaPane = this.shadowRoot.querySelector('jedi-schema-pane');
+    if (!schemaPane) return;
+
+    const assigned = slot.assignedElements();
+    if (assigned.length === 0) return;
+
+    // Move assigned elements to schema pane's light DOM (preserves event listeners)
+    assigned.forEach(el => {
+      el.setAttribute('slot', 'header-controls');
+      this._applyHeaderControlStyles(el);
+      schemaPane.appendChild(el);
+    });
+  }
+
+  _handleDataSlotChange(e) {
+    const slot = e.target;
+    const dataPane = this.shadowRoot.querySelector('jedi-data-pane');
+    if (!dataPane) return;
+
+    const assigned = slot.assignedElements();
+    if (assigned.length === 0) return;
+
+    // Move assigned elements to data pane's light DOM (preserves event listeners)
+    assigned.forEach(el => {
+      el.setAttribute('slot', 'header-controls');
+      this._applyHeaderControlStyles(el);
+      dataPane.appendChild(el);
+    });
+  }
+
+  _applyHeaderControlStyles(container) {
+    // Style the container
+    container.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-left:auto;';
+
+    // Style buttons
+    container.querySelectorAll('button').forEach(btn => {
+      btn.style.cssText = `
+        padding: 0.25rem 0.5rem;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        font-family: var(--jedi-font-sans);
+        border: none;
+        border-radius: var(--jedi-radius);
+        background: transparent;
+        color: var(--jedi-text-muted);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      `.replace(/\s+/g, ' ');
+      btn.addEventListener('mouseenter', () => {
+        btn.style.background = 'var(--jedi-bg-input)';
+        btn.style.color = 'var(--jedi-text)';
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--jedi-text-muted)';
+      });
+    });
+
+    // Style selects
+    container.querySelectorAll('select').forEach(sel => {
+      sel.style.cssText = `
+        padding: 0.25rem 1.25rem 0.25rem 0.5rem;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        font-family: var(--jedi-font-sans);
+        border: none;
+        border-radius: var(--jedi-radius);
+        background-color: var(--jedi-bg-primary);
+        color: var(--jedi-text-muted);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='%239ca3af'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.375rem center;
+      `.replace(/\s+/g, ' ');
+      sel.addEventListener('mouseenter', () => {
+        sel.style.backgroundColor = 'var(--jedi-bg-input)';
+        sel.style.color = 'var(--jedi-text)';
+      });
+      sel.addEventListener('mouseleave', () => {
+        sel.style.backgroundColor = 'var(--jedi-bg-primary)';
+        sel.style.color = 'var(--jedi-text-muted)';
+      });
+      sel.addEventListener('focus', () => {
+        sel.style.backgroundColor = 'var(--jedi-bg-input)';
+        sel.style.color = 'var(--jedi-text)';
+        sel.style.outline = 'none';
+      });
+      sel.addEventListener('blur', () => {
+        sel.style.backgroundColor = 'var(--jedi-bg-primary)';
+        sel.style.color = 'var(--jedi-text-muted)';
+      });
+    });
+
+    // Style dividers
+    container.querySelectorAll('.divider').forEach(div => {
+      div.style.cssText = 'width:1px;height:1rem;background:var(--jedi-border);';
+    });
   }
 
   _validate() {
