@@ -61,14 +61,6 @@ export class JediInlineValue extends LitElement {
         padding: 0;
         outline: none;
       }
-
-      .value-input.string {
-        color: var(--jedi-string);
-      }
-
-      .value-input.number, .value-input.integer {
-        color: var(--jedi-number);
-      }
     `
   ];
 
@@ -102,7 +94,7 @@ export class JediInlineValue extends LitElement {
       return html`
         <input
           type="text"
-          class="value-input ${this.type}"
+          class="value-input"
           .value="${this._editValue}"
           size="${Math.max(this._editValue.length, 1)}"
           @input="${this._handleInput}"
@@ -124,9 +116,8 @@ export class JediInlineValue extends LitElement {
   }
 
   _formatDisplayValue() {
-    if (this.type === 'string') return `"${this.value ?? ''}"`;
     if (this.type === 'null' || this.value === null) return 'null';
-    return String(this.value);
+    return String(this.value ?? '');
   }
 
   _handleClick() {

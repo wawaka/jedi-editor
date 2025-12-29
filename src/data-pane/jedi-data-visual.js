@@ -284,6 +284,7 @@ export class JediDataVisual extends LitElement {
         type="${rootType}"
         ?expanded="${isExpanded}"
         ?clickable="${hasChildren}"
+        ?block-clickable="${!hasChildren}"
         ?show-add-button="${hasChildren}"
         add-button-title="${rootType === 'array' ? 'Add item' : 'Add property'}"
         count="${hasChildren ? (rootType === 'array' ? this.data.length : Object.keys(this.data || {}).length) : null}"
@@ -291,6 +292,7 @@ export class JediDataVisual extends LitElement {
         @toggle-expand="${() => this._toggleExpand('')}"
         @type-click="${(e) => this._openTypeMenu(e.detail.event, [])}"
         @add-click="${rootType === 'array' ? this._handleAddRootItem : this._handleAddRootProperty}"
+        @block-click="${() => this._startEdit('')}"
       >
         ${!hasChildren ? this._renderPrimitiveEditor(this.data, rootType, this.schema, []) : ''}
         <div slot="content">
@@ -449,7 +451,9 @@ export class JediDataVisual extends LitElement {
     return html`
       <jedi-value-block
         type="${valueType}"
+        block-clickable
         @type-click="${(e) => this._openTypeMenu(e.detail.event, path)}"
+        @block-click="${() => this._startEdit(pathStr)}"
       >
         ${this._renderPrimitiveEditor(value, valueType, schemaNode, path)}
       </jedi-value-block>

@@ -12,6 +12,7 @@ import './jedi-enum-badge.js';
  * @property {string} type - Value type (string, number, integer, boolean, object, array, null)
  * @property {boolean} expanded - Whether nested content is visible
  * @property {boolean} clickable - Whether header is clickable for expand/collapse
+ * @property {boolean} blockClickable - Show pointer cursor for block-click behavior
  * @property {boolean} ghost - Ghost variant (dashed border, transparent bg)
  * @property {boolean} typeClickable - Whether type badge opens type menu
  * @property {boolean} showAddButton - Show add button
@@ -29,6 +30,7 @@ import './jedi-enum-badge.js';
  * @fires enum-click - Enum badge clicked
  * @fires ghost-enum-click - Ghost enum button clicked
  * @fires ghost-click - Ghost block clicked
+ * @fires block-click - Block header clicked (for non-expandable blocks)
  *
  * @slot - Additional header content
  * @slot content - Nested content area (children or enum editor)
@@ -39,6 +41,7 @@ export class JediValueBlock extends LitElement {
     type: { type: String },
     expanded: { type: Boolean },
     clickable: { type: Boolean },
+    blockClickable: { type: Boolean, attribute: 'block-clickable' },
     ghost: { type: Boolean, reflect: true },
     // Type badge
     typeClickable: { type: Boolean, attribute: 'type-clickable' },
@@ -89,7 +92,8 @@ export class JediValueBlock extends LitElement {
         box-sizing: border-box;
       }
 
-      .block-header.clickable {
+      .block-header.clickable,
+      .block-header.block-clickable {
         cursor: pointer;
       }
 
@@ -154,6 +158,7 @@ export class JediValueBlock extends LitElement {
     this.type = 'string';
     this.expanded = false;
     this.clickable = false;
+    this.blockClickable = false;
     this.ghost = false;
     // Type badge
     this.typeClickable = true;
@@ -193,7 +198,7 @@ export class JediValueBlock extends LitElement {
     return html`
       <div class="block" style="border-color: ${borderColor}">
         <div
-          class="block-header ${this.clickable ? 'clickable' : ''}"
+          class="block-header ${this.clickable ? 'clickable' : ''}${this.blockClickable ? ' block-clickable' : ''}"
           @click="${this._handleHeaderClick}"
         >
           <jedi-type-badge
@@ -266,12 +271,22 @@ export class JediValueBlock extends LitElement {
   }
 
   _handleHeaderClick(e) {
-    if (!this.clickable) return;
-    // Don't toggle if clicking on interactive elements
-    if (e.target.closest('jedi-type-badge, jedi-add-button, jedi-enum-badge, button')) return;
+    // Don't handle if clicking on interactive elements
+    if (e.target.closest('jedi-type-badge, jedi-add-button, jedi-enum-badge, jedi-inline-value, button')) return;
 
     e.stopPropagation();
-    this.dispatchEvent(new CustomEvent('toggle-expand', {
+
+    // Toggle expand for expandable blocks
+    if (this.clickable) {
+      this.dispatchEvent(new CustomEvent('toggle-expand', {
+        bubbles: false,
+        composed: false
+      }));
+      return;
+    }
+
+    // Fallback: emit block-click for non-expandable blocks (e.g., to start editing)
+    this.dispatchEvent(new CustomEvent('block-click', {
       bubbles: false,
       composed: false
     }));
