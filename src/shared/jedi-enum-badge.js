@@ -17,17 +17,24 @@ export class JediEnumBadge extends LitElement {
     themeStyles,
     css`
       :host {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        vertical-align: middle;
         position: relative;
       }
 
       .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         padding: 0.125rem 0.375rem;
         border-radius: var(--jedi-radius);
         font-size: 0.625rem;
+        line-height: 1.4;
         background: rgba(77, 166, 255, 0.2);
         color: var(--jedi-info);
         border: 1px solid rgba(77, 166, 255, 0.5);
+        box-sizing: border-box;
         cursor: pointer;
       }
 
