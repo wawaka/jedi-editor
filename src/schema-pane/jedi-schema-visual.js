@@ -4,7 +4,9 @@ import { SCHEMA_TYPES, LAYOUT } from '../shared/constants.js';
 import '../shared/jedi-value-block.js';
 import '../shared/jedi-delete-button.js';
 import '../shared/jedi-required-button.js';
+import '../shared/jedi-add-button.js';
 import '../shared/jedi-inline-edit.js';
+import '../shared/jedi-inline-value.js';
 
 /**
  * Visual schema editor with recursive property/items editing
@@ -20,7 +22,8 @@ export class JediSchemaVisual extends LitElement {
     data: { type: Object },
     showDataGhosts: { type: Boolean, attribute: 'show-data-ghosts' },
     debugGrid: { type: Boolean, attribute: 'debug-grid' },
-    _editingName: { type: String, state: true }
+    _editingName: { type: String, state: true },
+    _editingEnumKey: { type: String, state: true }
   };
 
   static styles = [
@@ -150,64 +153,12 @@ export class JediSchemaVisual extends LitElement {
         margin-top: 0.5rem;
       }
 
-      .enum-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-      }
-
-      .enum-header span {
-        font-size: 0.75rem;
-        color: var(--jedi-text-muted);
-      }
-
-      .enum-header button {
-        font-size: 0.625rem;
-        color: var(--jedi-text-dim);
-        background: none;
-        border: none;
-        cursor: pointer;
-      }
-
-      .enum-header button:hover {
-        color: var(--jedi-error);
-      }
-
       .enum-value-row {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.25rem;
         margin-bottom: 0.25rem;
       }
-
-      .enum-value-row .index {
-        width: 1rem;
-        font-size: 0.625rem;
-        color: var(--jedi-text-dim);
-        text-align: right;
-      }
-
-      .enum-value-row .value-btn {
-        flex: 1;
-        text-align: left;
-        font-size: 0.75rem;
-        font-family: var(--jedi-font-mono);
-        padding: 0.125rem 0.5rem;
-        border-radius: var(--jedi-radius);
-        background: none;
-        border: none;
-        cursor: pointer;
-        transition: background 0.15s;
-      }
-
-      .enum-value-row .value-btn:hover {
-        background: var(--jedi-bg-input);
-      }
-
-      .enum-value-row .value-btn.string { color: var(--jedi-string); }
-      .enum-value-row .value-btn.number { color: var(--jedi-number); }
-      .enum-value-row .value-btn.boolean { color: var(--jedi-boolean); }
 
       .enum-value-row jedi-delete-button {
         opacity: 0;
@@ -216,28 +167,6 @@ export class JediSchemaVisual extends LitElement {
 
       .enum-value-row:hover jedi-delete-button {
         opacity: 1;
-      }
-
-      .add-enum-value {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        font-size: 0.75rem;
-        color: var(--jedi-success);
-        background: none;
-        border: none;
-        cursor: pointer;
-        margin-top: 0.5rem;
-        padding: 0;
-      }
-
-      .add-enum-value:hover {
-        color: #00e67a;
-      }
-
-      .add-enum-value svg {
-        width: 0.75rem;
-        height: 0.75rem;
       }
 
       .ghost-name {
@@ -258,7 +187,7 @@ export class JediSchemaVisual extends LitElement {
     this._expandedPaths = new Set(['']);
     this._typeMenuState = { open: false, path: null, top: 0, left: 0 };
     this._editingName = null;
-    this._editingEnum = { path: null, index: null, value: '' };
+    this._editingEnumKey = null; // Format: "path.join('.')|index"
   }
 
   render() {
@@ -459,59 +388,34 @@ export class JediSchemaVisual extends LitElement {
 
     return html`
       <div class="enum-editor">
-        <div class="enum-header">
-          <span>Enum values</span>
-          <button @click="${() => this._removeEnum(path)}">remove enum</button>
-        </div>
         ${enumValues.map((value, index) => this._renderEnumValue(value, index, path, type))}
-        <button class="add-enum-value" @click="${() => this._addEnumValue(path, type)}">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Add value
-        </button>
+        <jedi-add-button
+          title="Add enum value"
+          @click="${() => this._addEnumValue(path, type)}"
+        ></jedi-add-button>
       </div>
     `;
   }
 
   _renderEnumValue(value, index, path, type) {
     const pathKey = path.join('.');
-    const isEditing = this._editingEnum.path === pathKey && this._editingEnum.index === index;
-    const valueType = typeof value;
-    const display = valueType === 'string' ? `"${value}"` : String(value);
-
-    if (isEditing) {
-      return html`
-        <div class="enum-value-row">
-          <span class="index">${index}</span>
-          <input
-            type="text"
-            class="input"
-            style="flex: 1;"
-            .value="${this._editingEnum.value}"
-            @input="${(e) => this._editingEnum = { ...this._editingEnum, value: e.target.value }}"
-            @blur="${() => this._saveEnumValue(path, index, type)}"
-            @keydown="${(e) => {
-              if (e.key === 'Enter') this._saveEnumValue(path, index, type);
-              if (e.key === 'Escape') this._editingEnum = { path: null, index: null, value: '' };
-            }}"
-            autofocus
-          />
-        </div>
-      `;
-    }
+    const enumKey = `${pathKey}|${index}`;
+    const isEditing = this._editingEnumKey === enumKey;
 
     return html`
       <div class="enum-value-row">
-        <span class="index">${index}</span>
-        <button
-          class="value-btn ${valueType}"
-          @click="${() => this._startEditEnumValue(path, index, value)}"
-        >${display}</button>
         <jedi-delete-button
           @click="${() => this._deleteEnumValue(path, index)}"
           title="Delete value"
         ></jedi-delete-button>
+        <jedi-inline-value
+          .value="${value}"
+          type="${type}"
+          ?editing="${isEditing}"
+          @edit-start="${() => { this._editingEnumKey = enumKey; }}"
+          @edit-complete="${(e) => this._handleEnumEditComplete(path, index, e.detail.value)}"
+          @edit-cancel="${() => { this._editingEnumKey = null; }}"
+        ></jedi-inline-value>
       </div>
     `;
   }
@@ -729,13 +633,15 @@ export class JediSchemaVisual extends LitElement {
     const node = this._getNodeAtPath(path);
     const type = this._getType(node);
     const defaultValue = type === 'string' ? '' : type === 'boolean' ? true : 0;
+    const pathKey = path.join('.');
 
     const newSchema = this._updateAtPath(this.schema, path, n => ({
       ...n,
       enum: [defaultValue]
     }));
 
-    this._expandedPaths.add(path.join('.'));
+    this._expandedPaths.add(pathKey);
+    this._editingEnumKey = `${pathKey}|0`;
     this._emitChange(newSchema);
   }
 
@@ -752,48 +658,35 @@ export class JediSchemaVisual extends LitElement {
 
   _addEnumValue(path, type) {
     const defaultValue = type === 'string' ? '' : type === 'boolean' ? true : 0;
-    const newSchema = this._updateAtPath(this.schema, path, node => ({
-      ...node,
-      enum: [...(node.enum || []), defaultValue]
+    const node = this._getNodeAtPath(path);
+    const newIndex = (node?.enum || []).length;
+    const pathKey = path.join('.');
+
+    const newSchema = this._updateAtPath(this.schema, path, n => ({
+      ...n,
+      enum: [...(n.enum || []), defaultValue]
     }));
     this._emitChange(newSchema);
+
+    // Enter edit mode for the new value
+    this._editingEnumKey = `${pathKey}|${newIndex}`;
   }
 
-  _startEditEnumValue(path, index, value) {
-    this._editingEnum = {
-      path: path.join('.'),
-      index,
-      value: typeof value === 'string' ? value : String(value)
-    };
-    this.requestUpdate();
-  }
+  _handleEnumEditComplete(path, index, newValue) {
+    this._editingEnumKey = null;
 
-  _saveEnumValue(path, index, type) {
-    let parsed;
-    const raw = this._editingEnum.value;
-
-    if (type === 'string') {
-      parsed = raw;
-    } else if (type === 'number' || type === 'integer') {
-      parsed = Number(raw);
-      if (isNaN(parsed)) {
-        this._editingEnum = { path: null, index: null, value: '' };
-        this.requestUpdate();
-        return;
-      }
-    } else if (type === 'boolean') {
-      parsed = raw === 'true';
-    } else {
-      parsed = raw;
+    // If empty string, remove the item instead of saving
+    if (newValue === '') {
+      this._deleteEnumValue(path, index);
+      return;
     }
 
     const newSchema = this._updateAtPath(this.schema, path, node => {
       const newEnum = [...(node.enum || [])];
-      newEnum[index] = parsed;
+      newEnum[index] = newValue;
       return { ...node, enum: newEnum };
     });
 
-    this._editingEnum = { path: null, index: null, value: '' };
     this._emitChange(newSchema);
   }
 
