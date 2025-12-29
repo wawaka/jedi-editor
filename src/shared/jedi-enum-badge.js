@@ -67,26 +67,8 @@ export class JediEnumBadge extends LitElement {
         border-radius: var(--jedi-radius);
         font-size: 0.625rem;
         font-family: var(--jedi-font-mono);
-      }
-
-      .value.string {
-        background: rgba(0, 255, 136, 0.15);
-        color: var(--jedi-string);
-      }
-
-      .value.number {
-        background: rgba(255, 107, 0, 0.15);
-        color: var(--jedi-number);
-      }
-
-      .value.boolean {
-        background: rgba(255, 166, 77, 0.15);
-        color: var(--jedi-boolean);
-      }
-
-      .value.other {
-        background: rgba(107, 114, 128, 0.3);
-        color: var(--jedi-text-muted);
+        background: var(--jedi-info);
+        color: white;
       }
     `
   ];
@@ -118,12 +100,7 @@ export class JediEnumBadge extends LitElement {
   }
 
   _renderValue(value) {
-    const type = typeof value;
-    const display = type === 'string' ? `"${value}"` : String(value);
-    const typeClass = type === 'string' ? 'string' :
-                      type === 'number' ? 'number' :
-                      type === 'boolean' ? 'boolean' : 'other';
-    return html`<span class="value ${typeClass}">${display}</span>`;
+    return html`<span class="value">${String(value)}</span>`;
   }
 
   _handleClick(e) {
