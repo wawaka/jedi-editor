@@ -4,19 +4,29 @@ import { themeStyles } from '../styles/shared-styles.js';
 /**
  * Square add button with plus icon
  * @element jedi-add-button
+ * @property {string} title - Tooltip text
  * @fires click - When button is clicked
  */
 export class JediAddButton extends LitElement {
+  static properties = {
+    title: { type: String }
+  };
+
+  constructor() {
+    super();
+    this.title = 'Add';
+  }
+
   static styles = [
     themeStyles,
     css`
       :host {
-        display: inline-block;
+        display: inline-flex;
       }
 
       button {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 18px;
+        height: 18px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -26,16 +36,18 @@ export class JediAddButton extends LitElement {
         border: none;
         cursor: pointer;
         transition: all 0.15s ease;
+        padding: 0;
       }
 
       button:hover {
         background: rgba(0, 255, 136, 0.2);
-        color: #00e67a;
+        color: #86efac;
       }
 
       svg {
-        width: 0.875rem;
-        height: 0.875rem;
+        width: 11px;
+        height: 11px;
+        flex-shrink: 0;
       }
     `
   ];
@@ -43,8 +55,8 @@ export class JediAddButton extends LitElement {
   render() {
     return html`
       <button title="${this.title || 'Add'}" @click="${this._handleClick}">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        <svg fill="none" stroke="currentColor" viewBox="2 2 20 20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M12 4v16m8-8H4" />
         </svg>
       </button>
     `;
