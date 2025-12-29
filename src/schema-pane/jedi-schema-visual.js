@@ -10,11 +10,15 @@ import '../shared/jedi-inline-edit.js';
  * Visual schema editor with recursive property/items editing
  * @element jedi-schema-visual
  * @property {Object} schema - JSON Schema object
+ * @property {*} data - Current data (for showing ghost fields)
+ * @property {boolean} showDataGhosts - Show fields from data not in schema
  * @fires schema-change - When schema changes, detail: { schema }
  */
 export class JediSchemaVisual extends LitElement {
   static properties = {
     schema: { type: Object },
+    data: { type: Object },
+    showDataGhosts: { type: Boolean, attribute: 'show-data-ghosts' },
     debugGrid: { type: Boolean, attribute: 'debug-grid' },
     _editingName: { type: String, state: true }
   };
@@ -235,12 +239,21 @@ export class JediSchemaVisual extends LitElement {
         width: 0.75rem;
         height: 0.75rem;
       }
+
+      .ghost-name {
+        font-size: 0.875rem;
+        font-family: var(--jedi-font-mono);
+        color: var(--jedi-text-muted);
+        font-style: italic;
+      }
     `
   ];
 
   constructor() {
     super();
     this.schema = { type: 'object', properties: {} };
+    this.data = {};
+    this.showDataGhosts = false;
     this.debugGrid = false;
     this._expandedPaths = new Set(['']);
     this._typeMenuState = { open: false, path: null, top: 0, left: 0 };
@@ -369,7 +382,24 @@ export class JediSchemaVisual extends LitElement {
       const required = node.required || [];
       const propEntries = Object.entries(properties);
 
-      return propEntries.length === 0
+      // Find ghost properties from data (keys in data but not in schema)
+      const ghostEntries = [];
+      if (this.showDataGhosts) {
+        const dataAtPath = this._getDataAtSchemaPath(path);
+        if (dataAtPath && typeof dataAtPath === 'object' && !Array.isArray(dataAtPath)) {
+          const dataKeys = Object.keys(dataAtPath);
+          const schemaKeys = Object.keys(properties);
+          for (const key of dataKeys) {
+            if (!schemaKeys.includes(key)) {
+              ghostEntries.push({ name: key, value: dataAtPath[key] });
+            }
+          }
+        }
+      }
+
+      const hasContent = propEntries.length > 0 || ghostEntries.length > 0;
+
+      return !hasContent
         ? html`<div class="empty-message">No properties defined</div>`
         : html`
             <div class="property-grid">
@@ -378,6 +408,9 @@ export class JediSchemaVisual extends LitElement {
                 const isReq = required.includes(propName);
                 return this._renderProperty(propName, propNode, propPath, isReq, path);
               })}
+              ${ghostEntries.map(({ name, value }) =>
+                this._renderGhostProperty(name, value, path)
+              )}
             </div>
           `;
     }
@@ -502,6 +535,79 @@ export class JediSchemaVisual extends LitElement {
       node = node[key];
     }
     return node;
+  }
+
+  // Convert schema path to data path and get data at that path
+  // Schema path: ['properties', 'name', 'properties', 'nested'] -> Data path: ['name', 'nested']
+  _getDataAtSchemaPath(schemaPath) {
+    const dataPath = [];
+    for (let i = 0; i < schemaPath.length; i++) {
+      if (schemaPath[i] === 'properties' && i + 1 < schemaPath.length) {
+        dataPath.push(schemaPath[i + 1]);
+        i++; // Skip the property name as we've consumed it
+      } else if (schemaPath[i] === 'items') {
+        // For items, we can't traverse further without an index
+        // Just return the array itself if we're at items level
+        break;
+      }
+    }
+
+    let current = this.data;
+    for (const key of dataPath) {
+      if (current === null || current === undefined) return undefined;
+      current = current[key];
+    }
+    return current;
+  }
+
+  _getValueType(value) {
+    if (value === null) return 'null';
+    if (Array.isArray(value)) return 'array';
+    return typeof value;
+  }
+
+  _renderGhostProperty(name, value, parentPath) {
+    const valueType = this._getValueType(value);
+
+    return html`
+      <div class="property-name">
+        <span class="ghost-name">${name}</span>
+      </div>
+      <div class="property-value">
+        <jedi-value-block
+          ghost
+          type="${valueType}"
+          ghost-hint="click to add to schema"
+          @ghost-click="${() => this._addPropertyFromData(parentPath, name, value)}"
+        ></jedi-value-block>
+      </div>
+    `;
+  }
+
+  _addPropertyFromData(parentPath, name, value) {
+    const valueType = this._getValueType(value);
+    let schemaType = valueType;
+    if (schemaType === 'null') schemaType = 'string'; // Default null to string in schema
+
+    const newSchema = this._updateAtPath(this.schema, parentPath, node => {
+      const properties = node.properties || {};
+      const newPropSchema = { type: schemaType };
+
+      // If it's an object or array with content, create nested schema
+      if (schemaType === 'object' && value && Object.keys(value).length > 0) {
+        newPropSchema.properties = {};
+      }
+      if (schemaType === 'array') {
+        newPropSchema.items = { type: 'string' };
+      }
+
+      return {
+        ...node,
+        properties: { ...properties, [name]: newPropSchema }
+      };
+    });
+
+    this._emitChange(newSchema);
   }
 
   _toggleExpand(pathKey) {

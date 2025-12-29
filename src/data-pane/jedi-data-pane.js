@@ -22,7 +22,8 @@ export class JediDataPane extends LitElement {
     debugGrid: { type: Boolean, attribute: 'debug-grid' },
     _mode: { type: String, state: true },
     _rawValue: { type: String, state: true },
-    _parseError: { type: String, state: true }
+    _parseError: { type: String, state: true },
+    _showSchemaGhosts: { type: Boolean, state: true }
   };
 
   static styles = [
@@ -92,6 +93,39 @@ export class JediDataPane extends LitElement {
       .error-path {
         color: var(--jedi-info);
       }
+
+      .ghost-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.625rem;
+        color: var(--jedi-text-muted);
+        background: none;
+        border: 1px dashed var(--jedi-text-dim);
+        border-radius: var(--jedi-radius);
+        cursor: pointer;
+        transition: all 0.15s;
+        opacity: 0.6;
+      }
+
+      .ghost-toggle:hover {
+        opacity: 1;
+        color: var(--jedi-text);
+        border-color: var(--jedi-text-muted);
+      }
+
+      .ghost-toggle.active {
+        opacity: 1;
+        color: var(--jedi-info);
+        border-color: var(--jedi-info);
+        border-style: solid;
+      }
+
+      .ghost-toggle svg {
+        width: 0.75rem;
+        height: 0.75rem;
+      }
     `
   ];
 
@@ -105,6 +139,7 @@ export class JediDataPane extends LitElement {
     this._mode = 'visual';
     this._rawValue = '{}';
     this._parseError = null;
+    this._showSchemaGhosts = true;
   }
 
   willUpdate(changedProperties) {
@@ -138,6 +173,17 @@ export class JediDataPane extends LitElement {
           <slot name="header-controls"></slot>
         </div>
         <div class="header-right">
+          <button
+            class="ghost-toggle ${this._showSchemaGhosts ? 'active' : ''}"
+            @click="${this._toggleSchemaGhosts}"
+            title="${this._showSchemaGhosts ? 'Hide schema fields' : 'Show fields from schema not in data'}"
+          >
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            schema
+          </button>
           <jedi-editor-toggle
             mode="${this._mode}"
             @mode-change="${this._handleModeChange}"
@@ -162,6 +208,7 @@ export class JediDataPane extends LitElement {
             .data="${this.data}"
             .schema="${this.schema}"
             .errors="${this.errors}"
+            ?show-schema-ghosts="${this._showSchemaGhosts}"
             ?debug-grid="${this.debugGrid}"
             @data-change="${this._handleVisualChange}"
           ></jedi-data-visual>
@@ -179,6 +226,10 @@ export class JediDataPane extends LitElement {
         </div>
       ` : ''}
     `;
+  }
+
+  _toggleSchemaGhosts() {
+    this._showSchemaGhosts = !this._showSchemaGhosts;
   }
 
   _handleModeChange(e) {

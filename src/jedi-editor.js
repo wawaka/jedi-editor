@@ -117,6 +117,7 @@ export class JediEditor extends LitElement {
         <div class="pane">
           <jedi-schema-pane
             .schema="${this._schema}"
+            .data="${this._data}"
             ?debug-grid="${this._debugGrid}"
             @schema-change="${this._handleSchemaChange}"
           ></jedi-schema-pane>

@@ -14,6 +14,7 @@ const DATA_TYPES = [...SCHEMA_TYPES, 'null'];
  * @property {*} data - Data to edit
  * @property {Object} schema - JSON Schema for type hints and ghost properties
  * @property {Array} errors - Validation errors
+ * @property {boolean} showSchemaGhosts - Show fields from schema not in data
  * @fires data-change - When data changes, detail: { data }
  */
 export class JediDataVisual extends LitElement {
@@ -21,6 +22,7 @@ export class JediDataVisual extends LitElement {
     data: { type: Object },
     schema: { type: Object },
     errors: { type: Array },
+    showSchemaGhosts: { type: Boolean, attribute: 'show-schema-ghosts' },
     debugGrid: { type: Boolean, attribute: 'debug-grid' },
     _expandedPaths: { type: Object, state: true },
     _editingPath: { type: String, state: true },
@@ -267,6 +269,7 @@ export class JediDataVisual extends LitElement {
     this.data = {};
     this.schema = {};
     this.errors = [];
+    this.showSchemaGhosts = true;
     this.debugGrid = false;
     this._expandedPaths = new Set(['']);
     this._editingPath = null;
@@ -316,10 +319,12 @@ export class JediDataVisual extends LitElement {
       const schemaItems = schemaKeys.map(key => {
         if (dataKeys.includes(key)) {
           return { type: 'real', key, value: data[key], schema: schemaProps[key] };
-        } else {
+        } else if (this.showSchemaGhosts) {
           return { type: 'ghost', key, schema: schemaProps[key] };
+        } else {
+          return null;
         }
-      });
+      }).filter(item => item !== null);
 
       // Extra keys not in schema (at the bottom)
       const extraItems = dataKeys
