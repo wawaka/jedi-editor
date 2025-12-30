@@ -23,7 +23,8 @@ export class JediSchemaVisual extends LitElement {
     showDataGhosts: { type: Boolean, attribute: 'show-data-ghosts' },
     debugGrid: { type: Boolean, attribute: 'debug-grid' },
     _editingName: { type: String, state: true },
-    _editingEnumKey: { type: String, state: true }
+    _editingEnumKey: { type: String, state: true },
+    _editingMinmaxKey: { type: String, state: true }
   };
 
   static styles = [
@@ -169,6 +170,36 @@ export class JediSchemaVisual extends LitElement {
         opacity: 1;
       }
 
+      /* Min/max editor styles */
+      .minmax-editor {
+        padding: 0.5rem;
+        background: rgba(255, 183, 77, 0.05);
+        border-radius: var(--jedi-radius);
+        margin-top: 0.5rem;
+      }
+
+      .minmax-row {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .minmax-row jedi-delete-button {
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      .minmax-row:hover jedi-delete-button {
+        opacity: 1;
+      }
+
+      .minmax-label {
+        font-size: 0.75rem;
+        color: var(--jedi-text-muted);
+        min-width: 2rem;
+      }
+
       .ghost-name {
         font-size: 0.875rem;
         font-family: var(--jedi-font-mono);
@@ -188,6 +219,7 @@ export class JediSchemaVisual extends LitElement {
     this._typeMenuState = { open: false, path: null, top: 0, left: 0 };
     this._editingName = null;
     this._editingEnumKey = null; // Format: "path.join('.')|index"
+    this._editingMinmaxKey = null; // Format: "path.join('.')|min" or "path.join('.')|max"
   }
 
   render() {
@@ -202,13 +234,18 @@ export class JediSchemaVisual extends LitElement {
     const hasChildren = type === 'object' || type === 'array';
     const isExpanded = this._expandedPaths.has('');
     const hasEnum = Array.isArray(this.schema?.enum) && this.schema.enum.length > 0;
+    const hasMinmax = this._hasMinmax(this.schema);
+    const isNumericType = type === 'number' || type === 'integer';
 
     return html`
       <jedi-value-block
         type="${type}"
         ?expanded="${isExpanded}"
-        ?clickable="${hasChildren || isExpanded}"
+        ?clickable="${hasChildren || isExpanded || hasMinmax}"
         .enumValues="${hasEnum ? this.schema.enum : null}"
+        .minValue="${this.schema?.minimum}"
+        .maxValue="${this.schema?.maximum}"
+        ?show-ghost-minmax="${!hasMinmax && !hasChildren && isNumericType}"
         ?show-add-button="${type === 'object'}"
         add-button-title="Add property"
         .count="${type === 'object' ? Object.keys(this.schema?.properties || {}).length : null}"
@@ -216,11 +253,14 @@ export class JediSchemaVisual extends LitElement {
         @toggle-expand="${() => this._toggleExpand('')}"
         @type-click="${(e) => this._openTypeMenu(e.detail.event, [])}"
         @enum-click="${() => this._toggleExpand('')}"
+        @minmax-click="${() => this._toggleExpand('')}"
+        @ghost-minmax-click="${() => this._addMinmax([])}"
         @add-click="${(e) => this._handleAddProperty(e.detail.event, [])}"
       >
         <div slot="content">
           ${hasChildren ? this._renderChildren(this.schema, [], type) : ''}
           ${hasEnum ? this._renderEnumEditor(this.schema, []) : ''}
+          ${hasMinmax ? this._renderMinmaxEditor(this.schema, []) : ''}
         </div>
       </jedi-value-block>
     `;
@@ -232,6 +272,8 @@ export class JediSchemaVisual extends LitElement {
     const hasChildren = type === 'object' || type === 'array';
     const isExpanded = this._expandedPaths.has(pathKey);
     const hasEnum = Array.isArray(node?.enum) && node.enum.length > 0;
+    const hasMinmax = this._hasMinmax(node);
+    const isNumericType = type === 'number' || type === 'integer';
     const isEditing = this._editingName === pathKey;
 
     return html`
@@ -262,9 +304,12 @@ export class JediSchemaVisual extends LitElement {
         <jedi-value-block
           type="${type}"
           ?expanded="${isExpanded}"
-          ?clickable="${hasChildren || isExpanded}"
+          ?clickable="${hasChildren || isExpanded || hasMinmax}"
           .enumValues="${hasEnum ? node.enum : null}"
+          .minValue="${node?.minimum}"
+          .maxValue="${node?.maximum}"
           ?show-ghost-enum="${!hasEnum && !hasChildren}"
+          ?show-ghost-minmax="${!hasMinmax && !hasChildren && isNumericType}"
           ?show-add-button="${type === 'object'}"
           add-button-title="Add property"
           .count="${type === 'object' ? Object.keys(node.properties || {}).length : null}"
@@ -272,12 +317,15 @@ export class JediSchemaVisual extends LitElement {
           @toggle-expand="${() => this._toggleExpand(pathKey)}"
           @type-click="${(e) => this._openTypeMenu(e.detail.event, path)}"
           @enum-click="${() => this._toggleExpand(pathKey)}"
+          @minmax-click="${() => this._toggleExpand(pathKey)}"
           @ghost-enum-click="${() => this._addEnum(path)}"
+          @ghost-minmax-click="${() => this._addMinmax(path)}"
           @add-click="${(e) => this._handleAddProperty(e.detail.event, path)}"
         >
           <div slot="content">
             ${hasChildren ? this._renderChildren(node, path, type) : ''}
             ${hasEnum ? this._renderEnumEditor(node, path) : ''}
+            ${hasMinmax ? this._renderMinmaxEditor(node, path) : ''}
           </div>
         </jedi-value-block>
       </div>
@@ -352,14 +400,19 @@ export class JediSchemaVisual extends LitElement {
       const itemHasChildren = itemType === 'object' || itemType === 'array';
       const itemIsExpanded = this._expandedPaths.has(itemsPathKey);
       const itemHasEnum = Array.isArray(items?.enum) && items.enum.length > 0;
+      const itemHasMinmax = this._hasMinmax(items);
+      const itemIsNumericType = itemType === 'number' || itemType === 'integer';
 
       return html`
         <jedi-value-block
           type="${itemType}"
           ?expanded="${itemIsExpanded}"
-          ?clickable="${itemHasChildren || itemIsExpanded}"
+          ?clickable="${itemHasChildren || itemIsExpanded || itemHasMinmax}"
           .enumValues="${itemHasEnum ? items.enum : null}"
+          .minValue="${items?.minimum}"
+          .maxValue="${items?.maximum}"
           ?show-ghost-enum="${!itemHasEnum && !itemHasChildren}"
+          ?show-ghost-minmax="${!itemHasMinmax && !itemHasChildren && itemIsNumericType}"
           ?show-add-button="${itemType === 'object'}"
           add-button-title="Add property"
           .count="${itemType === 'object' ? Object.keys(items.properties || {}).length : null}"
@@ -367,12 +420,15 @@ export class JediSchemaVisual extends LitElement {
           @toggle-expand="${() => this._toggleExpand(itemsPathKey)}"
           @type-click="${(e) => this._openTypeMenu(e.detail.event, itemsPath)}"
           @enum-click="${() => this._toggleExpand(itemsPathKey)}"
+          @minmax-click="${() => this._toggleExpand(itemsPathKey)}"
           @ghost-enum-click="${() => this._addEnum(itemsPath)}"
+          @ghost-minmax-click="${() => this._addMinmax(itemsPath)}"
           @add-click="${(e) => this._handleAddProperty(e.detail.event, itemsPath)}"
         >
           <div slot="content">
             ${itemHasChildren ? this._renderChildren(items, itemsPath, itemType) : ''}
             ${itemHasEnum ? this._renderEnumEditor(items, itemsPath) : ''}
+            ${itemHasMinmax ? this._renderMinmaxEditor(items, itemsPath) : ''}
           </div>
         </jedi-value-block>
       `;
@@ -703,6 +759,117 @@ export class JediSchemaVisual extends LitElement {
       }));
       this._emitChange(newSchema);
     }
+  }
+
+  // Min/max methods
+  _hasMinmax(node) {
+    return node?.minimum !== undefined || node?.maximum !== undefined;
+  }
+
+  _renderMinmaxEditor(node, path) {
+    if (!node) return '';
+    const hasMin = node.minimum !== undefined;
+    const hasMax = node.maximum !== undefined;
+    const pathKey = path.join('.');
+
+    return html`
+      <div class="minmax-editor">
+        ${hasMin ? this._renderMinmaxRow('min', node.minimum, path, pathKey) : ''}
+        ${hasMax ? this._renderMinmaxRow('max', node.maximum, path, pathKey) : ''}
+        ${!hasMin || !hasMax ? html`
+          <jedi-add-button
+            title="${!hasMin && !hasMax ? 'Add min or max' : !hasMin ? 'Add minimum' : 'Add maximum'}"
+            @click="${() => this._addMinmaxValue(path, !hasMin ? 'min' : 'max')}"
+          ></jedi-add-button>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  _renderMinmaxRow(field, value, path, pathKey) {
+    const minmaxKey = `${pathKey}|${field}`;
+    const isEditing = this._editingMinmaxKey === minmaxKey;
+
+    return html`
+      <div class="minmax-row">
+        <jedi-delete-button
+          @click="${() => this._deleteMinmaxValue(path, field)}"
+          title="Delete ${field === 'min' ? 'minimum' : 'maximum'}"
+        ></jedi-delete-button>
+        <span class="minmax-label">${field}:</span>
+        <jedi-inline-value
+          .value="${value}"
+          type="number"
+          ?editing="${isEditing}"
+          @edit-start="${() => { this._editingMinmaxKey = minmaxKey; }}"
+          @edit-complete="${(e) => this._handleMinmaxEditComplete(path, field, e.detail.value)}"
+          @edit-cancel="${() => { this._editingMinmaxKey = null; }}"
+        ></jedi-inline-value>
+      </div>
+    `;
+  }
+
+  _addMinmax(path) {
+    const pathKey = path.join('.');
+
+    const newSchema = this._updateAtPath(this.schema, path, n => ({
+      ...n,
+      minimum: 0
+    }));
+
+    this._expandedPaths.add(pathKey);
+    this._editingMinmaxKey = `${pathKey}|min`;
+    this._emitChange(newSchema);
+  }
+
+  _addMinmaxValue(path, field) {
+    const pathKey = path.join('.');
+    const prop = field === 'min' ? 'minimum' : 'maximum';
+
+    const newSchema = this._updateAtPath(this.schema, path, n => ({
+      ...n,
+      [prop]: 0
+    }));
+
+    this._editingMinmaxKey = `${pathKey}|${field}`;
+    this._emitChange(newSchema);
+  }
+
+  _handleMinmaxEditComplete(path, field, newValue) {
+    this._editingMinmaxKey = null;
+
+    // If empty or not a valid number, remove the constraint
+    if (newValue === '' || newValue === null || newValue === undefined || Number.isNaN(newValue)) {
+      this._deleteMinmaxValue(path, field);
+      return;
+    }
+
+    const prop = field === 'min' ? 'minimum' : 'maximum';
+    const newSchema = this._updateAtPath(this.schema, path, node => ({
+      ...node,
+      [prop]: newValue
+    }));
+
+    this._emitChange(newSchema);
+  }
+
+  _deleteMinmaxValue(path, field) {
+    const node = this._getNodeAtPath(path);
+    const prop = field === 'min' ? 'minimum' : 'maximum';
+    const otherProp = field === 'min' ? 'maximum' : 'minimum';
+    const hasOther = node?.[otherProp] !== undefined;
+
+    if (!hasOther) {
+      // No other constraint, collapse the editor
+      const pathKey = path.join('.');
+      this._expandedPaths.delete(pathKey);
+    }
+
+    const newSchema = this._updateAtPath(this.schema, path, n => {
+      const { [prop]: _, ...rest } = n;
+      return rest;
+    });
+    this._emitChange(newSchema);
   }
 
   // Immutable update helper

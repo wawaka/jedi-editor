@@ -4,6 +4,7 @@ import { TYPE_COLORS, LAYOUT } from './constants.js';
 import './jedi-type-badge.js';
 import './jedi-add-button.js';
 import './jedi-enum-badge.js';
+import './jedi-minmax-badge.js';
 
 /**
  * Reusable value block component for schema and data panes
@@ -21,6 +22,9 @@ import './jedi-enum-badge.js';
  * @property {string} countFormat - 'object' for {n}, 'array' for [n]
  * @property {Array} enumValues - If set, shows enum badge with these values
  * @property {boolean} showGhostEnum - Show ghost "enum" button
+ * @property {number|null} minValue - If set, shows in min/max badge
+ * @property {number|null} maxValue - If set, shows in min/max badge
+ * @property {boolean} showGhostMinmax - Show ghost "min/max" button
  * @property {boolean} showItemsLabel - Show "items" label
  * @property {string} ghostHint - Hint text for ghost blocks
  *
@@ -29,6 +33,8 @@ import './jedi-enum-badge.js';
  * @fires add-click - Add button clicked
  * @fires enum-click - Enum badge clicked
  * @fires ghost-enum-click - Ghost enum button clicked
+ * @fires minmax-click - Min/max badge clicked
+ * @fires ghost-minmax-click - Ghost min/max button clicked
  * @fires ghost-click - Ghost block clicked
  * @fires block-click - Block header clicked (for non-expandable blocks)
  *
@@ -54,6 +60,10 @@ export class JediValueBlock extends LitElement {
     // Enum badge
     enumValues: { type: Array, attribute: 'enum-values' },
     showGhostEnum: { type: Boolean, attribute: 'show-ghost-enum' },
+    // Min/max badge
+    minValue: { type: Number, attribute: 'min-value' },
+    maxValue: { type: Number, attribute: 'max-value' },
+    showGhostMinmax: { type: Boolean, attribute: 'show-ghost-minmax' },
     // Labels
     showItemsLabel: { type: Boolean, attribute: 'show-items-label' },
     ghostHint: { type: String, attribute: 'ghost-hint' }
@@ -141,6 +151,27 @@ export class JediValueBlock extends LitElement {
         border-color: var(--jedi-info);
       }
 
+      .ghost-minmax-btn {
+        padding: 0.125rem 0.375rem;
+        border-radius: var(--jedi-radius);
+        font-size: 0.625rem;
+        background: transparent;
+        color: var(--jedi-text-dim);
+        border: 1px dashed var(--jedi-text-dim);
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      .block-header:hover .ghost-minmax-btn {
+        opacity: 1;
+      }
+
+      .ghost-minmax-btn:hover {
+        color: var(--jedi-warning);
+        border-color: var(--jedi-warning);
+      }
+
       :host([ghost]) .block-header {
         opacity: 0.4;
         transition: opacity 0.15s ease;
@@ -171,6 +202,10 @@ export class JediValueBlock extends LitElement {
     // Enum badge
     this.enumValues = null;
     this.showGhostEnum = false;
+    // Min/max badge
+    this.minValue = null;
+    this.maxValue = null;
+    this.showGhostMinmax = false;
     // Labels
     this.showItemsLabel = false;
     this.ghostHint = '';
@@ -207,7 +242,9 @@ export class JediValueBlock extends LitElement {
             @click="${this._handleTypeBadgeClick}"
           ></jedi-type-badge>
           ${this._renderEnumBadge()}
+          ${this._renderMinmaxBadge()}
           ${this._renderGhostEnumButton()}
+          ${this._renderGhostMinmaxButton()}
           ${this._renderAddButton()}
           ${this._renderCount()}
           ${this._renderItemsLabel()}
@@ -247,6 +284,29 @@ export class JediValueBlock extends LitElement {
     `;
   }
 
+  _renderMinmaxBadge() {
+    const hasMin = this.minValue !== null && this.minValue !== undefined;
+    const hasMax = this.maxValue !== null && this.maxValue !== undefined;
+    if (!hasMin && !hasMax) return '';
+    return html`
+      <jedi-minmax-badge
+        .min="${this.minValue}"
+        .max="${this.maxValue}"
+        @minmax-badge-click="${this._handleMinmaxBadgeClick}"
+      ></jedi-minmax-badge>
+    `;
+  }
+
+  _renderGhostMinmaxButton() {
+    if (!this.showGhostMinmax) return '';
+    return html`
+      <button
+        class="ghost-minmax-btn"
+        @click="${this._handleGhostMinmaxClick}"
+      >min/max</button>
+    `;
+  }
+
   _renderAddButton() {
     if (!this.showAddButton) return '';
     return html`
@@ -272,7 +332,7 @@ export class JediValueBlock extends LitElement {
 
   _handleHeaderClick(e) {
     // Don't handle if clicking on interactive elements
-    if (e.target.closest('jedi-type-badge, jedi-add-button, jedi-enum-badge, jedi-inline-value, button')) return;
+    if (e.target.closest('jedi-type-badge, jedi-add-button, jedi-enum-badge, jedi-minmax-badge, jedi-inline-value, button')) return;
 
     e.stopPropagation();
 
@@ -317,6 +377,26 @@ export class JediValueBlock extends LitElement {
     e.stopPropagation();
 
     this.dispatchEvent(new CustomEvent('ghost-enum-click', {
+      detail: { event: e },
+      bubbles: false,
+      composed: false
+    }));
+  }
+
+  _handleMinmaxBadgeClick(e) {
+    e.stopPropagation();
+
+    this.dispatchEvent(new CustomEvent('minmax-click', {
+      detail: { event: e },
+      bubbles: false,
+      composed: false
+    }));
+  }
+
+  _handleGhostMinmaxClick(e) {
+    e.stopPropagation();
+
+    this.dispatchEvent(new CustomEvent('ghost-minmax-click', {
       detail: { event: e },
       bubbles: false,
       composed: false
