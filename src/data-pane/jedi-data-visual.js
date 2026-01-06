@@ -747,10 +747,20 @@ export class JediDataVisual extends LitElement {
   _openTypeMenu(e, path) {
     e.stopPropagation();
     const rect = e.target.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    // Estimate menu height: 8 types × ~24px each + padding
+    const estimatedMenuHeight = DATA_TYPES.length * 24 + 8;
+    const spaceBelow = viewportHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    // Flip to drop-up if not enough space below but enough above
+    const shouldFlipUp = spaceBelow < estimatedMenuHeight && spaceAbove > spaceBelow;
+    const top = shouldFlipUp ? rect.top - estimatedMenuHeight - 4 : rect.bottom + 4;
+
     this._typeMenuState = {
       open: true,
       path,
-      top: rect.bottom + 4,
+      top,
       left: rect.left
     };
     this.requestUpdate();
